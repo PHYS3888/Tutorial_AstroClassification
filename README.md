@@ -45,9 +45,10 @@ Load the `TimeSeries` table into your Matlab workspace, and take a look at the f
 head(TimeSeries)
 ```
 
-In total there are 1341 time series (`height(TimeSeries)`).
-Each corresponds to a star observed by the Kepler telescope.
-The data for each is in the Data column.
+Each row of `TimeSeries` corresponds to a star observed by the Kepler telescope.
+Light-curve data is contained in the `Data` column, while the other columns give additional information about each star, including its ID (`Name`) and assigned class (`Keywords`).
+
+Verify that there are 1341 time series in total using `height(TimeSeries)`.
 If you are not familiar with table objects in Matlab, note that you can pick out the time-series data for object `i` as `TimeSeries.Data{i}`, and get its metadata as `TimeSeries(i,:)`.
 
 #### Plot a light curve
@@ -126,6 +127,7 @@ Repeat for the non-variable (`nonvar`) stars.
 From inspecting just five examples of each type, what types of frequency-domain features do you think will help you classify the two types of stars?
 
 ### Choose Your Own Features
+
 Write a new function, `f = MyTwoFeatures(x);` that takes in a time-series, `x`, and outputs two features (real numbers stored in the two-element vector, `f`), that represent two different properties of the power spectrum.
 A draft function structure has worked up for you, including a pre-processing using the _z_-score.
 You just need to implement the calculation of two features, as described below.
@@ -150,29 +152,31 @@ _Note_: If you use the `bandpower` function, note that the frequency range shoul
 #### Feature space
 
 Now loop over all time series in `TimeSeriesTwo`, computing your two features for each.
-Store the result as the 385 x 2 (time series x feature) matrix, `dataMatrix`.
+Store the result as the 385 x 2 (time series x feature) matrix, `dataMatrixTwo`.
+
+:milky_way::stars::satisfied::star2::bowtie::star2::smile::star2::laughing::stars::milky_way:
 
 Have a brief celebration!
-You have generated programmatic machinery to convert light curves into an interpretable two-dimensional feature space that will enable automatic classification of Kepler stars!
-:stars::satisfied::star2::bowtie::star2::smile::star2::laughing::stars::milky_way:
+You have just generated the main programmatic machinery to convert light curves into an interpretable two-dimensional feature space that will enable the automatic classification of Kepler stars!
 
 #### Plotting
-Notice that we now have the two ingredients we need for learning:
-1. An observation x feature data matrix (`dataMatrix`)
+Did you notice?: We now have the two ingredients we need for learning:
+1. An observation x feature data matrix (`dataMatrixTwo`)
 2. Ground-truth labels for each item (`TimeSeriesTwo.Keywords`).
 
-We can denote these labels as a `categorical` instead of the current string.
+We can denote these labels as a `categorical` instead of storing them as a string of text.
 This tells Matlab to treat them not as lots of pieces of text, but as one of a set of categorical labels:
 
 ```matlab
-outputLabels = categorical(TimeSeriesTwo.Keywords);
+outputLabelsTwo = categorical(TimeSeriesTwo.Keywords);
 ```
 
 Let's first see how our two features are doing at separating the two classes.
 We can use the `gscatter` function to label our observations by their class:
 
 ```matlab
-gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels)
+figure('color','w')
+gscatter(dataMatrixTwo(:,1),dataMatrixTwo(:,2),outputLabelsTwo)
 xlabel('My Feature 1')
 ylabel('My Feature 2')
 ```
@@ -189,42 +193,96 @@ Are there any outliers?
 Let's train a linear SVM to distinguish:
 
 ```matlab
-Mdl_linearSVM = fitcsvm(dataMatrix,outputLabels,'KernelFunction','linear');
+theKernel = 'linear';
+Mdl_linearSVM = fitcsvm(dataMatrixTwo,outputLabelsTwo,...
+                    'Standardize',true,...
+                    'KernelFunction',theKernel);
 ```
 
 You just did 'machine learning'.
-Easy, huh?!
+Easy, huh?! :sweat_smile:
 
 We can now get the predicted labels for the data we fed in:
 ```matlab
-predictedLabels = predict(Mdl_linearSVM,dataMatrix);
+predictedLabelsTwo = predict(Mdl_linearSVM,dataMatrixTwo);
 ```
 
-Use the AND logical condition (`&`) to count how many `nonvar` stars were predicted to be `nonvar` stars?
+Use the logical AND condition (`&`) between your assigned labels (`outputLabelsTwo`) and predicted labels (`predictedLabelsTwo`) to count how many `nonvar` stars were predicted to be `nonvar` stars?
 Repeat for `contact`.
-Did the simple SVM classifier do pretty well in automatically distinguishing these two types of stars?
+
+Does this simple linear SVM classifier do well at distinguishing these two types of stars?
 
 We can construct a confusion matrix as:
 ```matlab
-confusionmat(outputLabels,predictedLabels)
+[confMat,order] = confusionmat(outputLabelsTwo,predictedLabelsTwo)
 ```
 Do the results match the diagonal entries you computed manually above?
 
-Does your model's prediction improve for an SVM with a radial basis kernel (`KernelFunction`,`rbf`)?
+If you get less than 100% prediction accuracy, investigate using a radial basis kernel function (`theKernel = 'rbf'`).
+Does your model's prediction improve?
 
 Evaluate each model across a grid of your feature space using the `predict` function.
 This is implemented for you in `gridPredictions`, but you'll need to fill in a few parts (marked `...`) to make sure you understand what's going on.
 
-Does the trained SVM classifier learn to distinguish high-density areas of each class?
+Try it out, both with `doPosterior = false` (plotting the predicted class at each point in feature space), and `doPosterior = true` (plotting the estimated probability of being each class at each point in the feature space).
 
-Does the boundary change if you allow a nonlinear boundary, by setting the `KernelFunction` to `rbf`?
+Does the trained SVM classifier learn a sensible prediction profile to distinguish the two classes of stars?
+
+:fire::fire::fire:
+__Training a nonlinear boundary.__
+How does the boundary change if you allow a nonlinear boundary, by setting the `KernelFunction` to `rbf`?
+You can train the `rbf` model as:
+```matlab
+Mdl_rbfSVM = fitcsvm(dataMatrixTwo,outputLabelsTwo,...
+                    'Standardize',true,...
+                    'KernelFunction','rbf',...
+                    'KernelScale','auto');
+```
+(Inspect the behavior of the fitted model using `gridPredictions` as before).
 
 :question::question::question:
-Upload plots of your SVM's predictions and data when using the `'linear'` and the `'rbf'` kernel.
+Upload a plots of the data and your trained SVM's in-sample predictions using either the `'linear'` or `'rbf'` kernel.
 
-### All classes?
+:fire::fire::fire:
+On this problem, it was not so difficult to get near-to (or precisely) 100% classification accuracy.
+For a challenge, play around with randomizing a proportion of labels (e.g., swap the labels on 10% of observations), or add some noise into the feature calculation (e.g., `fNoisy = f + 0.2*randn(2,1)`).
+See what happens to your prediction model, and the differences in prediction patterns between the `linear` and `rbf` kernel SVMs.
 
-Now that we're got some intuition with a couple of classes, and we are now armed with a reasonable two-dimensional feature space(!), let's go back to the full seven-class problem.
+## The seven-class problem :open_mouth:
+
+Now that we're got some intuition with a couple of classes, and we are now armed with a reasonable two-dimensional feature space, let's go back to the full seven-class problem.
+:muscle::metal:
 
 Repeat the steps performed above for the full dataset:
-1.
+1. __Compute features__: Use your `MyTwoFeatures` function to compute two features for each time series in the full dataset, saving the result to the 1341 x 2 matrix, `dataMatrix`.
+2. __Plot feature space__: Extract the categorical class labels as `outputLabels`, and then plot the class distributions for all seven classes in your two-dimensional feature space using `gscatter`.
+(_Note:_ you may wish to play around with the formatting of the plot, e.g., showing points as larger crosses: `gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels,'','x',10)`).
+
+From visually inspecting the feature space, assess whether this is an easier or more difficult classification problem than the two-class version.
+
+Now we can train a classification model for all seven types of stars!
+Let's work with normalized features:
+```matlab
+dataMatrixNorm = zscore(dataMatrix);
+```
+
+The syntax is slightly different in the multi-class setting:
+```matlab
+% Train a multi-class SVM classification model with a given kernel function:
+classNames = unique(outputLabels);
+% Pick a base model:
+% t = templateSVM('KernelFunction','linear');
+t = templateLinear();
+trainedModel = fitcecoc(dataMatrixNorm,outputLabels,'Learners',t,...
+            'ClassNames',classNames);
+```
+
+Then we can compute `predictedLabels` using the `predict` function (as above), and look at the confusion matrix in the commandline (`confusionmat`).
+[Don't forget to use `dataMatrixNorm`].
+
+From reading off of the confusion matrix, can you tell whether some classes are being classified better than others?
+
+Does the in-sample performance (e.g., the simplistic metric counting correct classification events) improve in the case of the `'rbf'` kernel relative to the `'linear'` kernel?
+
+:question::question::question:
+What was the in-sample classification accuracy of your classification model?
