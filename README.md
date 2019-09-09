@@ -1,7 +1,7 @@
 # Tutorial: Statistical Learning
 
 In this final tutorial of the course, we will learn how to analyze a big dataset of light curves measured from [NASA's _Kepler_ mission](https://www.nasa.gov/mission_pages/kepler/overview/index.html).
-You can learn more about this mission in [this YouTube video](https://www.youtube.com/watch?v=3yij1rJOefM).
+You can learn more about NASA's _Kepler_ mission in [this YouTube video](https://www.youtube.com/watch?v=3yij1rJOefM).
 
 ![](img/starryKepler.png)
 
@@ -22,13 +22,13 @@ Is it a classification or regression problem?
 The light curve is the brightness of a point in the sky, measured repeatedly through time.
 As shown in the plot below, we have seven classes of object that we're interested in detecting (labels of each star are given in parentheses):
 
-1. Detached binary ('detached')
-2. Contact binary ('contact')
-3. RR Lyrae ('RRLyr')
-4. Gamma Dor ('gDor')
-5. Delta Scuti ('dSct')
-6. Rotating binary ('rot')
-7. Non-variable star ('nonvar')
+1. Detached binary (`'detached'`)
+2. Contact binary (`'contact'`)
+3. RR Lyrae (`'RRLyr'`)
+4. Gamma Dor (`'gDor'`)
+5. Delta Scuti (`'dSct'`)
+6. Rotating binary (`'rot'`)
+7. Non-variable star (`'nonvar'`)
 
 Take a moment to inspect a representative example of each class in the time-domain and frequency-domain plots below.
 Just looking at the data, what types of properties do you think are going to be useful in distinguishing these seven types of stars?
@@ -50,11 +50,18 @@ Each corresponds to a star observed by the Kepler telescope.
 The data for each is in the Data column.
 If you are not familiar with table objects in Matlab, note that you can pick out the time-series data for object `i` as `TimeSeries.Data{i}`, and get its metadata as `TimeSeries(i,:)`.
 
-:question::question::question:
-Pick a star to plot, zooming in to see if you can discern any interesting temporal structure.
-Put the star's ID (`Name`) and class label (`Keywords`) in the title.
+#### Plot a light curve
+* Pick a star and plot its light curve, zooming in to see if you can discern any interesting temporal structure
+* _Note:_ If you spot some flat lines, these represent artefactual periods or missing data, and have been set to the signal mean.
+* Plot the signal using a valid and appropriate time axis with units (e.g., days), given that the Kepler telescope records a measurement every 29.45 minutes.
+* Set a variable, `maxL`, that plots only the first `maxL` samples.
+* Put the star's ID (`Name`) and class label (`Keywords`) in the title.
 
-### Feature extraction
+Write yourself a function `plotTimeSeries.m` (a template is provided for you) that takes in the `TimeSeries` table, an index of a time series to plot, and a maximum number of samples to plot, `maxL`, and outputs a time-series plot of the selected star.
+
+:question::question::question: __Upload your code.__
+
+### _Context_: Feature extraction
 
 Recall from lectures that we need to represent the problem in the form of an observation x feature data matrix (`X`) and a target output vector (`y`).
 In this tutorial we are going to represent time series by their different properties in the matrix `X`, and label each by one of seven categories in `y`.
@@ -63,48 +70,54 @@ In this tutorial we are going to represent time series by their different proper
 
 ### Two-Class Classification
 
-Let's get our confidence up by starting our analysis on a simpler two-class problem.
+#### Filtering to a subset
+
+Seven classes are a bit daunting; let's build some confidence by starting with a simpler two-class problem.
 
 Start by filtering down to just classes: `contact` and `nonvar`.
 You can achieve this by:
 1. Define `classesToKeep = {'contact','nonvar'}`
-2. Use the `ismember` function on the `Keywords` to find matching indices.
-3. Apply the logical filter to generate a new subsetted table, `TimeSeriesTwo`.
+2. Use the `ismember` function on the `Keywords` column of the `TimeSeries` table to find matching indices.
+3. Apply the logical filter on the rows of the `TimeSeries` table to generate a new table, `TimeSeriesTwo`.
 
-You should have 385 matches.
+You should get 385 matches (check `height(TimeSeriesTwo)`).
+
+#### Plotting in the time and frequency domain
 
 A physicist's first instinct when working with time series is to transform to the frequency domain.
 Those of you doing PHYS/DATA3888 should be familiar with numerically estimating the Fourier transform of a time series.
 I've worked you up a simple implementation in `ToFrequency`.
+To get a valid time axis, you'll need to calculate and specify the sampling frequency, `fs` (Hz).
 
 ```matlab
 doPlot = true;
-ToFrequency(TimeSeriesTwo.Data{1},doPlot);
+fs = ...;
+ToFrequency(TimeSeriesTwo.Data{1},fs,doPlot);
 ```
 
-Fill in the missing code below to plot five examples of a `contact` star in both the time domain and the frequency domain:
+Fill in the missing code below to plot five examples of a `contact` star in both the time domain (using your `plotTimeSeries` function you constructed above) and in the frequency domain (using `ToFrequency`):
 
 ```matlab
 % Indices of contact binary stars ('contact') (in TimeSeriesTwo)
-contactIndicies = find();
+contactIndicies = find(...);
 
-% Plot
-f = figure('color','w');
+% Settings:
 numToPlot = 5; % Number of examples to plot
 maxL = 500; % Only plot up to this maximum number of samples
+fs = ...;
+
+% Generate the plots:
+f = figure('color','w');
 for i = 1:numToPlot
     indexToPlot = contactIndicies(i);
 
     % Time Series
     subplot(numToPlot,2,(i-1)*2+1)
-    plot(TimeSeriesTwo.Data{indexToPlot}(1:maxL),'k')
-    xlabel('Time (samples)')
-    title(sprintf('%s (%s)',TimeSeriesTwo.Name{indexToPlot},...
-                    TimeSeriesTwo.Keywords{indexToPlot}))
+    plotTimeSeries(TimeSeriesTwo,indexToPlot,maxL);
 
     % Power Spectrum
     subplot(numToPlot,2,i*2)
-    ToFrequency(TimeSeriesTwo.Data{indexToPlot},true);
+    ToFrequency(TimeSeriesTwo.Data{indexToPlot},fs,true);
 end
 ```
 
@@ -113,24 +126,38 @@ Repeat for the non-variable (`nonvar`) stars.
 From inspecting just five examples of each type, what types of frequency-domain features do you think will help you classify the two types of stars?
 
 ### Choose Your Own Features
-
-Pick two different frequency ranges that you think are going to be informative of the differences between contact binaries and non-variable stars.
-Write a new function, `f = MyTwoFeatures(x);` that takes in a time-series, `x`, and outputs two features (real numbers stored in the two-element vector, `f`), that represent the power in your two chosen frequency bands.
-The `bandpower` function may be helpful.
+Write a new function, `f = MyTwoFeatures(x);` that takes in a time-series, `x`, and outputs two features (real numbers stored in the two-element vector, `f`), that represent two different properties of the power spectrum.
 A draft function structure has worked up for you, including a pre-processing using the _z_-score.
+You just need to implement the calculation of two features, as described below.
 
-:fire::fire::fire:
-If you feel boxed in by the `bandpower` features, don't!
-Feel free to be creative in defining any two features you desire, from properties of the distribution of power spectral densities such as its centroid, to the location of prominent peaks, you da boss!
-As long as you construct a function, `MyTwoFeatures`, that outputs two relevant features about the input, `x`.
+#### Feature 1: Peak in the power spectrum
 
-Now compute these two features for time series in `TimeSeriesTwo`, yielding a 385 x 2 (time series x feature) matrix, `dataMatrix`.
+Perhaps you noticed that the contact binaries have a characteristic oscillation.
+Let's first measure how 'peaky' the power spectrum is.
+The simplest metric for quantifying this is to simply take the `max` of the power spectral density.
 
-We did it!
-Now let's do some statistical learning on this matrix.
+:fire::fire: Feel free to instead implement an alternative feature, like the `skewness`, or an explicit peak-finding functions like `findpeaks`---anything that implements this idea of generating a _single real number_ that captures the peakiness of the power spectrum.
+
+#### Feature 2: Power across a frequency range
+
+The oscillation can also be detected as increased power across a range of frequencies.
+
+Looking again at the frequency spectra you plotted above, pick a frequency range that you think is going to be informative of the differences between contact binaries and non-variable stars.
+Implement this as your second feature in `MyTwoFeatures`.
+
+_Note_: If you use the `bandpower` function, note that the frequency range should be measured in Hz.
+
+#### Feature space
+
+Now loop over all time series in `TimeSeriesTwo`, computing your two features for each.
+Store the result as the 385 x 2 (time series x feature) matrix, `dataMatrix`.
+
+Have a brief celebration!
+You have generated programmatic machinery to convert light curves into an interpretable two-dimensional feature space that will enable automatic classification of Kepler stars!
+:stars::satisfied::star2::bowtie::star2::smile::star2::laughing::stars::milky_way:
 
 #### Plotting
-Notice have the two ingredients we need for learning:
+Notice that we now have the two ingredients we need for learning:
 1. An observation x feature data matrix (`dataMatrix`)
 2. Ground-truth labels for each item (`TimeSeriesTwo.Keywords`).
 
@@ -151,12 +178,13 @@ ylabel('My Feature 2')
 ```
 
 :question::question::question:
-Given how you constructed your two features above, give each axis an appropriate label and upload your plot.
+Give each axis an appropriate label (corresponding to how you designed each feature, adding units where appropriate), and upload your plot.
 
 Do your features separate the two classes?
-Can you interpret why the two classes are where they are in the feature space you constructed?
+Given your understanding of what your features are measuring, can you interpret why the two classes are where they are in the feature space?
+Are there any outliers?
 
-#### Training a classifier
+### Training a classifier
 
 Let's train a linear SVM to distinguish:
 
@@ -196,4 +224,7 @@ Upload plots of your SVM's predictions and data when using the `'linear'` and th
 
 ### All classes?
 
-Now that we're got some intuition with a couple of classes, and are now armed with a reasonable two-dimensional feature space(!), let's go back to the full seven-class problem.
+Now that we're got some intuition with a couple of classes, and we are now armed with a reasonable two-dimensional feature space(!), let's go back to the full seven-class problem.
+
+Repeat the steps performed above for the full dataset:
+1.
