@@ -6,6 +6,9 @@ if nargin < 4
     doPosterior = false;
 end
 
+classLabels = categories(outputLabels);
+numClasses = length(classLabels);
+
 %-------------------------------------------------------------------------------
 % Define a grid across the range of each feature:
 numPointsPerAxis = 50;
@@ -31,13 +34,36 @@ if doPosterior
     contourf(feat1_grid,feat2_grid,posteriorProb)
     giveMeTurboMap()
     % Plot data points on top:
-    gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels,'kw','xo')
+    if numClasses==2
+        gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels,'kw','xo')
+    else
+        gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels,'','o')
+    end
 else
     % Plot class prediction at each point in the feature space:
     pcolor(feat1_grid,feat2_grid,double(modelPrediction))
-    colormap(flipud(hot))
     % Plot data points on top:
-    gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels)
+    gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels,'','o')
+    % Set the color map:
+    if numClasses==2
+        colormap(flipud(hot))
+    else
+        % giveMeTurboMap();
+        pastel_cmap = [251, 180, 174;
+            179, 205, 227;
+            204, 235, 197;
+            222, 203, 228;
+            254, 217, 166;
+            255, 255, 204;
+            229, 216, 189];
+        colormap(pastel_cmap/255);
+        caxis([1,7])
+        shading('flat')
+        cB = colorbar;
+        cB.Limits = [1,7];
+        cB.Ticks = 1:7;
+        cB.TickLabels = classLabels;
+    end
 end
 
 

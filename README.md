@@ -24,16 +24,16 @@ As shown in the plot below, we have seven classes of object that we're intereste
 
 1. Detached binary (`'detached'`)
 2. Contact binary (`'contact'`)
-3. RR Lyrae (`'RRLyr'`)
-4. Gamma Dor (`'gDor'`)
-5. Delta Scuti (`'dSct'`)
-6. Rotating binary (`'rot'`)
-7. Non-variable star (`'nonvar'`)
+3. RR Lyrae variable (`'RRLyr'`)
+4. Gamma Doradus variable (`'gDor'`)
+5. Delta Scuti variable (`'dSct'`)
+6. Rotating variable (`'rot'`)
+7. Non-variable (`'nonvar'`)
 
 Take a moment to inspect a representative example of each class in the time-domain and frequency-domain plots below.
 Just looking at the data, what types of properties do you think are going to be useful in distinguishing these seven types of stars?
 
-![](img/classTimeseries.png)
+![](img/classTimeSeries.png)
 
 ### Exploring the dataset
 
@@ -190,13 +190,20 @@ Are there any outliers?
 
 ### Training a classifier
 
-Let's train a linear SVM to distinguish:
+We went through a few examples of different classification strategies in the lecture:
+boundary-based linear discriminant analysis and decision trees, and neighbor-based _k_-nearest-neighbor (_k_-NN).
+
+Today we're going to mainly use a support vector machine classifier (SVM), which can (extremely simply) be viewed as a souped-up variant of linear discriminant analysis.
+We're going to consider two variants:
+1. `'linear'` SVM, in which each pair of classes is separated by a linear boundary, and
+2. `'rbf'` kernel SVM, in which a local Gaussian distribution centered around each data point can generate more complicated nonlinear boundaries between pairs of classes.
+
+Let's first train a linear SVM to distinguish:
 
 ```matlab
-theKernel = 'linear';
 Mdl_linearSVM = fitcsvm(dataMatrixTwo,outputLabelsTwo,...
                     'Standardize',true,...
-                    'KernelFunction',theKernel);
+                    'KernelFunction','linear');
 ```
 
 You just did 'machine learning'.
@@ -218,33 +225,32 @@ We can construct a confusion matrix as:
 ```
 Do the results match the diagonal entries you computed manually above?
 
-If you get less than 100% prediction accuracy, investigate using a radial basis kernel function (`theKernel = 'rbf'`).
-Does your model's prediction improve?
-
-Evaluate each model across a grid of your feature space using the `predict` function.
-This is implemented for you in `gridPredictions`, but you'll need to fill in a few parts (marked `...`) to make sure you understand what's going on.
-
-Try it out, both with `doPosterior = false` (plotting the predicted class at each point in feature space), and `doPosterior = true` (plotting the estimated probability of being each class at each point in the feature space).
-
-Does the trained SVM classifier learn a sensible prediction profile to distinguish the two classes of stars?
-
-:fire::fire::fire:
-__Training a nonlinear boundary.__
-How does the boundary change if you allow a nonlinear boundary, by setting the `KernelFunction` to `rbf`?
-You can train the `rbf` model as:
+If you get less than 100% prediction accuracy, investigate using a radial basis kernel function (`theKernel = 'rbf'`):
 ```matlab
 Mdl_rbfSVM = fitcsvm(dataMatrixTwo,outputLabelsTwo,...
                     'Standardize',true,...
                     'KernelFunction','rbf',...
                     'KernelScale','auto');
 ```
-(Inspect the behavior of the fitted model using `gridPredictions` as before).
+
+Does your model's prediction improve?
+
+So now you have two trained models, `Mdl_linearSVM` and `Mdl_rbfSVM`.
+Evaluate each model across a grid of your feature space using the `predict` function.
+This is implemented for you in `gridPredictions`, but you'll need to fill in a few parts (marked `...`) to make sure you understand what's going on.
+
+Try out `gridPredictions`!
+1. Set `doPosterior = false`. This mode plots the predicted class at each point in feature space.
+2. :fire: Set `doPosterior = true`. This mode plots the estimated probability of being a given class at each point in the feature space.
+
+Does the trained SVM classifier learn a sensible prediction profile to distinguish the two classes of stars?
+How does the boundary change between the linear (`Mdl_linearSVM`) and nonlinear (`Mdl_rbfSVM`) SVMs?
 
 :question::question::question:
 Upload a plots of the data and your trained SVM's in-sample predictions using either the `'linear'` or `'rbf'` kernel.
 
 :fire::fire::fire:
-On this problem, it was not so difficult to get near-to (or precisely) 100% classification accuracy.
+On this problem, it was not so difficult to get near (or precisely) 100% classification accuracy.
 For a challenge, play around with randomizing a proportion of labels (e.g., swap the labels on 10% of observations), or add some noise into the feature calculation (e.g., `fNoisy = f + 0.2*randn(2,1)`).
 See what happens to your prediction model, and the differences in prediction patterns between the `linear` and `rbf` kernel SVMs.
 
@@ -254,35 +260,116 @@ Now that we're got some intuition with a couple of classes, and we are now armed
 :muscle::metal:
 
 Repeat the steps performed above for the full dataset:
-1. __Compute features__: Use your `MyTwoFeatures` function to compute two features for each time series in the full dataset, saving the result to the 1341 x 2 matrix, `dataMatrix`.
-2. __Plot feature space__: Extract the categorical class labels as `outputLabels`, and then plot the class distributions for all seven classes in your two-dimensional feature space using `gscatter`.
+
+__Compute features__.
+Use your `MyTwoFeatures` function to compute two features for each time series in the full dataset, saving the result to the 1341 x 2 matrix, `dataMatrix`.
+
+__Plot data in the feature space__.
+Extract the categorical class labels as `outputLabels`, and then plot the class distributions for all seven classes in your two-dimensional feature space using `gscatter`.
 (_Note:_ you may wish to play around with the formatting of the plot, e.g., showing points as larger crosses: `gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels,'','x',10)`).
 
-From visually inspecting the feature space, assess whether this is an easier or more difficult classification problem than the two-class version.
+From visually inspecting the feature space, assess whether there is more or less overlap between the class distributions, and thus whether this is an easier or more difficult classification problem than the two-class problem analyzed above.
 
 Now we can train a classification model for all seven types of stars!
-Let's work with normalized features:
-```matlab
-dataMatrixNorm = zscore(dataMatrix);
-```
+:dancers::dancers::dancers:
 
 The syntax is slightly different in the multi-class setting:
 ```matlab
 % Train a multi-class SVM classification model with a given kernel function:
-classNames = unique(outputLabels);
+classNames = categories(outputLabels);
 % Pick a base model:
-% t = templateSVM('KernelFunction','linear');
-t = templateLinear();
-trainedModel = fitcecoc(dataMatrixNorm,outputLabels,'Learners',t,...
+t = templateSVM('Standardize',true,'KernelFunction','linear');
+trainedModel = fitcecoc(dataMatrix,outputLabels,'Learners',t,...
             'ClassNames',classNames);
 ```
 
-Then we can compute `predictedLabels` using the `predict` function (as above), and look at the confusion matrix in the commandline (`confusionmat`).
-[Don't forget to use `dataMatrixNorm`].
+Then we can compute `predictedLabels` using the `predict` function (as above).
 
-From reading off of the confusion matrix, can you tell whether some classes are being classified better than others?
+Let's take a quick look at how we did using the `gridPredictions` function:
+```matlab
+gridPredictions(trainedModel,dataMatrix,outputLabels,false);
+```
+Does the model learn sensible classification regions for each class?
 
-Does the in-sample performance (e.g., the simplistic metric counting correct classification events) improve in the case of the `'rbf'` kernel relative to the `'linear'` kernel?
+Now inspect the seven-class confusion matrix in the command line using `confusionmat`.
+Are some classes being classified more accurately than others?
+
+How can you compute the number of true examples of each class from the confusion matrix?
+For each class, compute the proportion of true examples of a class that are predicted as such: `propCorrect`.
+Then plot it as a bar chart:
+
+```matlab
+bar(propCorrect);
+ax = gca;
+ax.XTick = 1:length(classNames);
+ax.XTickLabel = classNames;
+xlabel('Type of star')
+ylabel('Proportion correctly classified')
+```
 
 :question::question::question:
-What was the in-sample classification accuracy of your classification model?
+Upload your plot.
+
+Take the simplest measure of in-sample classification performance: counting the number of correct classification events.
+Does this metric improve in the case of the `'rbf'` kernel relative to the `'linear'` kernel?
+
+:question::question::question:
+Does a boost in in-sample accuracy from applying a more complex model always represent an improvement?
+Why or why not?
+
+#### :fire::fire::fire: (Optional): Class Imbalance
+A classifier that is simply trying to maximize the number of correct classification events will be biased towards over-represented classes.
+Look at the classification accuracy of each class (proportion of predictions of that class that match the true examples of that class).
+Does this intuition broadly hold true in the case of your classifier?
+You can fix this by adding weights, as an additional setting in the `fitcecoc` function (`'Weights',w`), for a weight vector, `w`, that sets the importance of classifying each object in the dataset.
+Try setting the weights such that each class contributes the same total weight.
+This is called inverse probability weighting.
+Compare the resulting `propCorrect` chart--does the classifier learn to treat the smaller classes more seriously?
+
+#### :fire::fire::fire: (Optional): More complex classifiers
+Try different base models by altering the line `t = templateSVM('Standardize',true,'KernelFunction','linear');`
+For example, try
+* k-NN with k = 3: `t = templateKNN('NumNeighbors',3,'Standardize',true);`
+* Decision tree: `t = templateTree('Surrogate','off');`
+* RBF-SVM: `t = templateSVM('Standardize',true,'KernelFunction','rbf','KernelScale','auto');`
+
+How do the inter-class boundaries look?
+Does the in-sample performance improve?
+
+### Predicting new stars
+
+Now we can test our classifier!
+New time series are in the `toTest` directory:
+1. `5702601.txt`
+2. `6042116.txt`
+3. `8324268.txt`
+4. `9664607.txt`
+5. `10933414.txt`
+
+You can load one as:
+```matlab
+theFiles = {'5702601.txt','6042116.txt','8324268.txt','9664607.txt','10933414.txt'};
+numFiles = length(theFiles);
+X = cell(numFiles,1);
+for i = 1:numFiles
+    fileLocation = fullfile('toTest',theFiles{i});
+    X{i} = dlmread(fileLocation,'',1,1);
+end
+```
+
+Compute your two features for each of these five stars, storing your results as a `newStarFeatures` matrix.
+
+Plot the new stars in your two-dimensional feature space, including the class boundaries trained above (`gridPredictions`).
+
+Now we can use the `predict` function to classify each of these stars based on their features, using the patterns we learned and stored in the `trainedModel` above:
+
+```matlab
+modelPrediction_star1 = predict(trainedModel,newStarFeatures(1,:));
+```
+
+
+
+### :fire::fire::fire: A large feature space
+Our results above were pretty impressive from using just two simple features of the power spectral density.
+Let's see if we can improve our predictions by adding thousands of diverse additional time-series features.
+We have already done the calculation for you (:fire: FYI :fire:, you can access the software we used for mass time-series feature extraction [here](https://github.com/benfulcher/hctsa)).
