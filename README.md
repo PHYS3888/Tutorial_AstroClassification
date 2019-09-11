@@ -249,7 +249,7 @@ gridPredictions(Mdl_linearSVM,dataMatrixTwo,outputLabelsTwo,doPosterior);
 ```
 
 1. Setting `doPosterior = false` plots the predicted class at each point in feature space.
-2. :fire: Setting `doPosterior = true` plots the model-estimated probability of the star being of a given class at a given point in feature space.
+2. Setting `doPosterior = true` plots the model-estimated probability of the star being of a given class at a given point in feature space.
 
 Do your models learn a sensible prediction profile to distinguish the two classes of stars?
 How does the boundary change between the linear (`Mdl_linearSVM`) and nonlinear (`Mdl_rbfSVM`) SVMs?
@@ -285,18 +285,26 @@ The syntax is slightly different in the multi-class setting:
 ```matlab
 % Train a multi-class SVM classification model with a given kernel function:
 classNames = categories(outputLabels);
-% Pick a base model:
-t = templateSVM('Standardize',true,'KernelFunction','linear');
-trainedModel = fitcecoc(dataMatrix,outputLabels,'Learners',t,...
+
+% Train a linear SVM:
+tLinear = templateSVM('Standardize',true,'KernelFunction','linear');
+Mdl_SVMlinear = fitcecoc(dataMatrix,outputLabels,'Learners',tLinear,...
+            'ClassNames',classNames);
+
+% Train an rbf SVM:
+tRBF = templateSVM('Standardize',true,'KernelFunction','rbf',...
+            'KernelScale','auto');
+Mdl_SVMrbf = fitcecoc(dataMatrix,outputLabels,'Learners',tRBF,...
             'ClassNames',classNames);
 ```
 
 Then we can compute `predictedLabels` using the `predict` function (as above).
 
-Let's take a quick look at how we did using the `gridPredictions` function:
+Let's take a quick look at how we did using the `gridPredictions` function (setting `trainedModel` appropriately):
 ```matlab
 gridPredictions(trainedModel,dataMatrix,outputLabels,false);
 ```
+
 Does the model learn sensible classification regions for each class?
 (You may wish to zoom in on the areas of high-density for a better look).
 
@@ -364,7 +372,7 @@ for i = 1:numFiles
 end
 ```
 
-Compute your two features for each of these five stars, storing your results as a `newStarFeatures` matrix.
+Compute your two features for both of these stars, storing your results as a `newStarFeatures` matrix.
 
 Plot the new stars in your two-dimensional feature space, including the class boundaries trained above (`gridPredictions`).
 
