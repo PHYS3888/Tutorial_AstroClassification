@@ -66,7 +66,6 @@ else
     end
 end
 
-
 xlabel('My Feature 1')
 ylabel('My Feature 2')
 
