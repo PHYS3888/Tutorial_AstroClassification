@@ -42,7 +42,7 @@ Load the `TimeSeries` table into your Matlab workspace, and take a look at the f
 
 ```matlab
 load('Kepler_TimeSeries.mat','TimeSeries')
-head(TimeSeries)
+TimeSeries(1:5,:)
 ```
 
 Each row of `TimeSeries` corresponds to a star observed by the Kepler telescope.
