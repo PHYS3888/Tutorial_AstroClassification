@@ -37,31 +37,37 @@ Just looking at the data, what types of properties do you think are going to be 
 ### Exploring the dataset
 
 First we need to understand how our data is structured.
-A good place to start is our time-series data, stored in a table, `TimeSeries`, in the Matlab file `Kepler_TimeSeries.mat`.
-Load the `TimeSeries` table into your Matlab workspace, and take a look at the first handful:
+A good place to start is our time-series data, stored in a _table_, `TimeSeries`, in the Matlab file `Kepler_TimeSeries.mat`.
+Load the `TimeSeries` table into your Matlab workspace, and take a look at the first ten:
 
 ```matlab
 load('Kepler_TimeSeries.mat','TimeSeries')
-TimeSeries(1:5,:)
+TimeSeries(1:10,:)
 ```
 
 Each row of `TimeSeries` corresponds to a star observed by the Kepler telescope.
 Light-curve data is contained in the `Data` column, while the other columns give additional information about each star, including its identity (`Name`) and assigned class (`Keywords`).
 
 Verify that there are 1341 time series in total using `height(TimeSeries)`.
-If you are not familiar with table objects in Matlab, note that you can pick out the time-series data for object `i` as `TimeSeries.Data{i}`, and retrive its metadata as `TimeSeries(i,:)`.
+If you are not familiar with table objects in Matlab, note that you can pick out the time-series data for object `i` as `TimeSeries.Data{i}`, its ID as `TimeSeries.Name{i}`, and its class label as `TimeSeries.Keywords{i}`.
+All metadata for object `i` is in the row `i`: `TimeSeries(i,:)`.
 
 #### Plot a light curve
-* Pick a star and plot its light curve, zooming in to see if you can discern any interesting temporal structure
-* _Note:_ If you spot some flat lines, these are artefactual periods (or missing data), that have been set to the signal mean.
-* Plot the light curve of your selected star using a valid and appropriate time axis with units (e.g., days).
-* Try plotting only the first `maxL` samples.
-* Put the star's ID (`Name`) and class label (`Keywords`) in the title.
+Extend the template function `plotTimeSeries.m`, to plot the light curve (brightness over time) of a selected star.
+As you'll see in the template provided, the function needs to take three inputs:
+1. The `TimeSeries` table,
+2. An index of a time series to plot, and
+3. A maximum number of samples to plot, `maxL`.
 
-Write yourself a function `plotTimeSeries.m` that implements the steps above, plotting the light curve of a selected star.
-A template has is provided for you, that takes as inputs: the `TimeSeries` table, an index of a time series to plot, and a maximum number of samples to plot, `maxL`.
+You'll need to fill some missing parts of the code, setting the Kepler sampling rate, `fs` (Hz), and converting the time axis from seconds to days.
 
-:question::question::question: __Upload the code of your function__.
+Pick any star to plot, and check that you get a good visualization by running `plotTimeSeries` appropriately.
+Zoom in to see if you can discern any interesting temporal structure.
+
+_Note:_ Don't worry if you spot some flat lines: these are artefactual periods (or missing data), that have been set to the signal's mean value.
+
+:question::question::question: __What is the sampling rate, `fs` (Hz)?__
+Given `fs`, and a time-series containing `N` samples, what code will give you the correct `timeAxis` variable (in seconds)?
 
 ### _Context_: Feature extraction
 
@@ -93,7 +99,7 @@ You should get 385 matches (verify using `height(TimeSeriesTwo)`).
 Periodicities are ubiquitous in nature, and a physicist's first instinct when working with time series is to transform them to the frequency domain.
 Those of you doing PHYS/DATA3888 should be familiar with numerically estimating the Fourier transform of a time series.
 A simple implementation of this transform is in `ToFrequency.m`.
-As you did above, you'll need to specify the sampling frequency, `fs` (Hz), to get a valid time axis.
+Specify the sampling frequency, `fs` (Hz), to get a valid time axis.
 
 ```matlab
 doPlot = true;

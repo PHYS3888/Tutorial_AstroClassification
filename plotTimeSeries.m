@@ -11,7 +11,24 @@ if nargin < 3
     maxL = 1000;
 end
 %-------------------------------------------------------------------------------
-% FILL IN YOUR CODE BELOW:
+% FILL IN THE BLANKS ... BELOW:
 
+% Sampling rate (Hz) of Kepler data:
+fs = ...;
+
+% Retrieve data:
+x = TimeSeries.Data{plotIndex};
+
+% Produce time axis
+N = length(x);
+tSec = (1:1/fs:N/fs)';
+tDay = ...; % convert tSec (seconds) to tDay (days)
+
+% Plot:
+plot(tDay(1:maxL),y(1:maxL),'k')
+xlabel('Time (day)')
+
+title(sprintf('%s (%s)',TimeSeries.Name{plotIndex},...
+                        TimeSeries.Keywords{plotIndex}))
 
 end
