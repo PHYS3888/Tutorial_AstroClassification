@@ -294,14 +294,12 @@ classNames = categories(outputLabels);
 
 % Train a linear SVM:
 tLinear = templateSVM('Standardize',true,'KernelFunction','linear');
-Mdl_SVMlinear = fitcecoc(dataMatrix,outputLabels,'Learners',tLinear,...
-            'ClassNames',classNames);
+Mdl_SVMlinear = fitcecoc(dataMatrix,outputLabels,'Learners',tLinear);
 
 % Train an rbf SVM:
 tRBF = templateSVM('Standardize',true,'KernelFunction','rbf',...
             'KernelScale','auto');
-Mdl_SVMrbf = fitcecoc(dataMatrix,outputLabels,'Learners',tRBF,...
-            'ClassNames',classNames);
+Mdl_SVMrbf = fitcecoc(dataMatrix,outputLabels,'Learners',tRBF);
 ```
 
 Then we can compute `predictedLabels` using the `predict` function (as above).
