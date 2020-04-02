@@ -25,7 +25,7 @@ tSec = (1:1/fs:N/fs)';
 tDay = ...; % convert tSec (seconds) to tDay (days)
 
 % Plot:
-plot(tDay(1:maxL),y(1:maxL),'k')
+plot(tDay(1:maxL),x(1:maxL),'k')
 xlabel('Time (day)')
 
 title(sprintf('%s (%s)',TimeSeries.Name{plotIndex},...
