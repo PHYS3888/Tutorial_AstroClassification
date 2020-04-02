@@ -224,7 +224,7 @@ We can now use this trained model, stored in `Mdl_linearSVM`, to get the predict
 predictedLabelsTwo = predict(Mdl_linearSVM,dataMatrixTwo);
 ```
 
-Use the logical AND condition (`&`) between your assigned labels (`outputLabelsTwo`) and predicted labels (`predictedLabelsTwo`) to count how many `nonvar` stars were predicted to be `nonvar` stars?
+Use the logical AND condition (`&&`) between your assigned labels (`outputLabelsTwo`) and predicted labels (`predictedLabelsTwo`) to count how many `nonvar` stars were predicted to be `nonvar` stars?
 Repeat for `contact`.
 
 Does this simple linear SVM classifier do well at distinguishing these two types of stars in your feature space?
