@@ -10,7 +10,8 @@ Because it is unfeasible for human researchers to manually sift through datasets
 
 In this tutorial, you will work through the techniques and concepts introduced in the lecture to find characteristic of different stars from NASA's _Kepler_ mission.
 By the end of the tutorial, you will have developed a simple algorithm to automatically detect different types of stars from measuring the variation in their brightness measured repeatedly across time, or a [light curve](https://imagine.gsfc.nasa.gov/science/toolbox/timing1.html).
-The _Kepler_ data that we will be analyzing today takes a measurement every 29.45 minutes.
+
+The amazing _Kepler_ light curve time series that we will be analyzing today takes a brightness measurement every 29.45 minutes.
 
 ### Background
 
@@ -45,28 +46,36 @@ load('Kepler_TimeSeries.mat','TimeSeries')
 TimeSeries(1:10,:)
 ```
 
-Each row of `TimeSeries` corresponds to a star observed by the Kepler telescope.
+Each row of the `TimeSeries` table corresponds to a star observed by the Kepler telescope.
 Light-curve data is contained in the `Data` column, while the other columns give additional information about each star, including its identity (`Name`) and assigned class (`Keywords`).
+
+#### Table objects
 
 Verify that there are 1341 time series in total using `height(TimeSeries)`.
 If you are not familiar with table objects in Matlab, note that you can pick out the time-series data for object `i` as `TimeSeries.Data{i}`, its ID as `TimeSeries.Name{i}`, and its class label as `TimeSeries.Keywords{i}`.
 All metadata for object `i` is in the row `i`: `TimeSeries(i,:)`.
 
+Input some of these types of commands to verify that you understand how to work with Matlab tables.
+
 #### Plot a light curve
-Extend the template function `plotTimeSeries.m`, to plot the light curve (brightness over time) of a selected star.
-As you'll see in the template provided, the function needs to take three inputs:
+
+Extend the template function `plotTimeSeries`, to plot the light curve (brightness over time) of a selected star.
+As you'll see in the template provided, the function takes three inputs:
 1. The `TimeSeries` table,
 2. An index of a time series to plot, and
 3. A maximum number of samples to plot, `maxL`.
 
-You'll need to fill some missing parts of the code, setting the Kepler sampling rate, `fs` (Hz), and converting the time axis from seconds to days.
+__You'll need to fill in two missing parts of the code (labeled `...`)__:
+1. Set the Kepler sampling rate, `fs` (Hz), and
+2. Convert the time axis from seconds to days.
 
 Pick any star to plot, and check that you get a good visualization by running `plotTimeSeries` appropriately.
 Zoom in to see if you can discern any interesting temporal structure.
 
-_Note:_ Don't worry if you spot some flat lines: these are artefactual periods (or missing data), that have been set to the signal's mean value.
+_Note:_ Don't worry if you spot some flat lines: these are artifactual periods (or missing data), that have been set to the signal's mean value.
 
-:question::question::question: __What is the sampling rate, `fs` (Hz)?__
+:question::question::question: __Q1:__
+What is the sampling rate, `fs` (Hz)?
 Given `fs`, and a time-series containing `N` samples, what code will give you the correct `timeAxis` variable (in seconds)?
 
 ### _Context_: Feature extraction
@@ -87,35 +96,46 @@ Seven classes are a bit daunting; let's build some confidence by starting with a
 
 Start by filtering down to just two classes: `contact` and `nonvar`.
 
-You can achieve this by the following steps.
-1. Define `classesToKeep = {'contact','nonvar'};`
-2. Use the `ismember` function on the `Keywords` column of the `TimeSeries` table to find matching indices.
-3. Apply the logical filter on the rows of the `TimeSeries` table to generate a new table, `TimeSeriesTwo`.
+You can achieve this by the following steps (fill in the blank `...`).
 
-You should get 385 matches (verify using `height(TimeSeriesTwo)`).
+```matlab
+% 1. Define the classes to keep:
+classesToKeep = {'contact','nonvar'};
+
+% 2. Find matches by applying the ismember function to the Keywords column of the Timeseries table:
+isMatch = ismember(TimeSeries.Keywords,classesToKeep);
+
+% 3. Apply the logical filter, isMatch, to rows of the original TimeSeries table to generate a new table, TimeSeriesTwoClass:
+TimeSeriesTwoClass = ...;
+```
+
+Verify that you get 385 matches by counting the rows of the new table that contains just `'contact'` and `'nonvar'` stars:
+```matlab
+height(TimeSeriesTwoClass)
+```
 
 #### Plotting in the time and frequency domain
 
-Periodicities are ubiquitous in nature, and a physicist's first instinct when working with time series is to transform them to the frequency domain.
-Those of you doing PHYS/DATA3888 should be familiar with numerically estimating the Fourier transform of a time series.
-A simple implementation of this transform is in `ToFrequency.m`.
-Specify the sampling frequency, `fs` (Hz), to get a valid time axis.
+Periodicities are ubiquitous in nature, and a physicist's first instinct when working with a time series is to transform it to the frequency domain.
+Being almost completely Sydney Uni-trained physicists, you should all be familiar with estimating the Fourier transform of a time series.
+A simple implementation of this transform is in the `ToFrequency` function.
+You'll need to specify the sampling frequency, `fs` (Hz), to get a valid time axis in the code below that plots the Fourier power spectrum for the first :
 
 ```matlab
 doPlot = true;
 fs = ...;
-ToFrequency(TimeSeriesTwo.Data{1},fs,doPlot);
+ToFrequency(TimeSeriesTwoClass.Data{1},fs,doPlot);
 ```
 
 Fill in the missing code below to plot five examples of a `contact` star in both the time domain (using your `plotTimeSeries` function you constructed above) and in the frequency domain (using `ToFrequency`):
 
 ```matlab
-% Indices of contact binary stars ('contact') (in TimeSeriesTwo)
+% Indices of contact binary stars ('contact') (in TimeSeriesTwoClass)
 contactIndicies = find(...);
 
 % Settings:
 numToPlot = 5; % Number of examples to plot
-maxL = 500; % Plot up to this maximum number of samples in the time-domain
+maxL = 500; % Plot up to this maximum number of samples in the time domain
 fs = ...;
 
 % Generate the plots:
@@ -125,11 +145,11 @@ for i = 1:numToPlot
 
     % Time Series
     subplot(numToPlot,2,(i-1)*2+1)
-    plotTimeSeries(TimeSeriesTwo,indexToPlot,maxL);
+    plotTimeSeries(TimeSeriesTwoClass,indexToPlot,maxL);
 
     % Power Spectrum
     subplot(numToPlot,2,i*2)
-    ToFrequency(TimeSeriesTwo.Data{indexToPlot},fs,true);
+    ToFrequency(TimeSeriesTwoClass.Data{indexToPlot},fs,true);
 end
 ```
 
@@ -161,7 +181,7 @@ _Note_: If you use the `bandpower` function, note that the frequency range shoul
 
 #### Feature space
 
-Now loop over all time series in `TimeSeriesTwo`, computing your two features for each.
+Now loop over all time series in `TimeSeriesTwoClass`, computing your two features for each.
 Store the result as the 385 x 2 (time series x feature) matrix, `dataMatrixTwo`.
 
 :milky_way::stars::satisfied::star2::bowtie::star2::smile::star2::laughing::stars::milky_way:
@@ -172,12 +192,12 @@ You have just generated the main programmatic machinery to convert light curves 
 #### Plotting
 Did you notice?: We now have the two ingredients we need for statistical learning:
 1. An observation x feature data matrix (`dataMatrixTwo`)
-2. Ground-truth labels for each item (`TimeSeriesTwo.Keywords`).
+2. Ground-truth labels for each item (`TimeSeriesTwoClass.Keywords`).
 
 We should first denote these labels as a `categorical` data type (a set of discrete categorical labels) instead of storing them as lots of pieces of text:
 
 ```matlab
-outputLabelsTwo = categorical(TimeSeriesTwo.Keywords);
+outputLabelsTwo = categorical(TimeSeriesTwoClass.Keywords);
 ```
 
 Let's first see how our two features are doing at separating the two classes.
@@ -260,7 +280,7 @@ gridPredictions(Mdl_linearSVM,dataMatrixTwo,outputLabelsTwo,doPosterior);
 Do your models learn a sensible prediction profile to distinguish the two classes of stars?
 How does the boundary change between the linear (`Mdl_linearSVM`) and nonlinear (`Mdl_rbfSVM`) SVMs?
 
-:question::question::question:
+:question::question::question: __Q2:__
 Upload a plot of the data and your trained SVM's in-sample predictions (in your two-dimensional feature space) for whichever you think looks cooler: `Mdl_linearSVM` or `Mdl_rbfSVM`.
 
 :fire::fire::fire:
@@ -329,13 +349,13 @@ xlabel('Type of star')
 ylabel('Proportion correctly classified')
 ```
 
-:question::question::question:
+:question::question::question: __Q3:__
 Give your bar chart a title and upload it.
 
 Take the simplest measure of in-sample classification performance: counting the number of correct classification events.
 Does this metric improve in the case of the `'rbf'` kernel relative to the `'linear'` kernel?
 
-:question::question::question:
+:question::question::question: __Q4:__
 Does a boost in in-sample accuracy from applying a more complex model always represent an improvement?
 Why or why not?
 
@@ -386,8 +406,9 @@ Now we can use the `predict` function to classify each of these stars based on t
 modelPredictions = predict(trainedModel,newStarFeatures);
 ```
 
-:question::question::question:
+:question::question::question: __Q5:__
 What does your best model predict to be the identity of these two new stars?
+
 
 ### :fire::fire::fire: (Optional) A massive feature space
 Our results are pretty impressive from such a simple two-dimensional space of power spectral density-based features.

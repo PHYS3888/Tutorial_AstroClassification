@@ -22,7 +22,7 @@ x = TimeSeries.Data{plotIndex};
 % Produce time axis
 N = length(x);
 tSec = (1:1/fs:N/fs)';
-tDay = ...; % convert tSec (seconds) to tDay (days)
+tDay = tSec/...; % convert tSec (seconds) to tDay (days)
 
 % Plot:
 plot(tDay(1:maxL),x(1:maxL),'k')
