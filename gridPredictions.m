@@ -37,13 +37,13 @@ if doPosterior
     if numClasses==2
         gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels,'kw','xo')
     else
-        gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels,'','o')
+        gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels,'','.',10)
     end
 else
     % Plot class prediction at each point in the feature space:
     pcolor(feat1_grid,feat2_grid,double(modelPrediction))
     % Plot data points on top:
-    gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels,'','o')
+    gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels,'','.',10)
     % Set the color map:
     if numClasses==2
         colormap(flipud(hot))

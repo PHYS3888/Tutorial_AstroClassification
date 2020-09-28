@@ -65,15 +65,15 @@ Implement your result into the `KeplerSamplingRate` function, which will allow a
 
 #### Plot a light curve
 
-We will use `plotTimeSeries`, to plot the light curve (brightness over time) of a selected star.
+We will use `PlotTimeSeries`, to plot the light curve (brightness over time) of a selected star.
 As you'll see in the template provided, the function takes three inputs:
 1. The `TimeSeries` table,
 2. An index of a time series to plot, and
 3. A maximum number of samples to plot, `maxL`.
 
-For the `plotTimeSeries` function to work, you'll need to have set `fs` correctly in the `KeplerSamplingRate` function (above), and you'll also need to fill in the missing line of code in `plotTimeSeries` to convert the time axis from seconds, `tSec`, to days, `tDay`.
+For the `PlotTimeSeries` function to work, you'll need to have set `fs` correctly in the `KeplerSamplingRate` function (above), and you'll also need to fill in the missing line of code in `PlotTimeSeries` to convert the time axis from seconds, `tSec`, to days, `tDay`.
 
-Once you're ready, pick some indices for stars to plot, and in each case verify that you get a good visualization by running `plotTimeSeries` appropriately.
+Once you're ready, pick some indices for stars to plot, and in each case verify that you get a good visualization by running `PlotTimeSeries` appropriately.
 If you need to, zoom in to see whether you can discern any interesting structure in the dynamics.
 
 _Note:_ Don't worry if you spot some flat lines: these are artifactual periods (or missing data), that have been set to the signal's mean value.
@@ -122,7 +122,7 @@ Being almost completely Sydney Uni-trained physicists, you should all be familia
 A simple implementation of this transform is in the `ToFrequency` function.
 In producing a valid time axis, the function uses your `KeplerSamplingRate` function to set the sampling frequency.
 
-Let's plot five examples of contact binary stars in the time domain (`plotTimeSeries`) and the frequency domain `ToFrequency`.
+Let's plot five examples of contact binary stars in the time domain (`PlotTimeSeries`) and the frequency domain `ToFrequency`.
 First we'll need indices of all contact binaries (which have the label `contact`) in the `TimeSeriesTwoClass` table, which we can get using the `strcmp` function to find matches to the label `'contact'`:
 ```matlab
 contactIndicies = find(strcmp(TimeSeriesTwoClass.Keywords,'contact'));
@@ -261,9 +261,6 @@ Try both:
 
 Does your model learn a sensible prediction profile to distinguish the two classes of stars?
 
-:question::question::question: __Q2:__
-Upload a plot of the data and your trained linear SVM's in-sample predictions in your two-dimensional feature space.
-
 #### A Nonlinear Model
 
 Linear not good enough for you?
@@ -273,6 +270,10 @@ Rather than assuming a linear boundary, this model uses a radial basis kernel fu
 
 Repeat the code above to evaluate this more complex model.
 Check what the predictions look like in the `gridPredictions` plot for this nonlinear model, `Mdl_SVMnonlinear`, and verify the nonlinear boundary.
+
+:question::question::question: __Q2:__
+Upload a `gridPredictions` plot of the data and the predictions of one of your trained SVMs (`Mdl_linearSVM` or `Mdl_SVMnonlinear`) in your two-dimensional feature space.
+Make sure the axes are labeled to highlight your two features.
 
 #### :fire::fire::fire: _(Optional)_ :fire::fire::fire: Adding noise
 
@@ -294,8 +295,8 @@ __2. Plot data in the feature space__.
 Extract the categorical class labels as `outputLabels`, and then plot the class distributions for all seven classes in your two-dimensional feature space using `gscatter`, e.g., fill in the `...`:
 
 ```matlab
-classNames = categorical(TimeSeries.Keywords);
-gscatter(...,...,classNames,'','.',10)
+classLabels = categorical(TimeSeries.Keywords);
+gscatter(...,...,classLabels,'','.',10)
 ```
 
 From visually inspecting where different types of stars sit in the feature space, think about whether this is an easier (or more difficult) classification problem than the two-class problem we analyzed above.
@@ -305,47 +306,62 @@ __3. Train a classifier :dancers::dancers::dancers:__.
 Now we can train a classification model for all seven types of stars!
 As before we can get our linear and nonlinear SVM models:
 ```matlab
-[Mdl_SVMlinear,Mdl_SVMnonlinear] = trainModels(dataMatrix,classNames);
+[Mdl_SVMlinear,Mdl_SVMnonlinear] = trainModels(dataMatrix,classLabels);
 ```
 
-Then we can compute `predictedLabels` using the `predict` function (as above).
-
-Let's take a quick look at how we did using the `gridPredictions` function (setting `...` appropriately):
+Let's take a quick look at how we did using the `gridPredictions` function (setting `...` as the `Mdl` of choice):
 ```matlab
-gridPredictions(...,dataMatrix,outputLabels,false);
+gridPredictions(Mdl_*,dataMatrix,outputLabels,false);
 ```
 
 Does the model learn sensible classification regions for each class?
 (You may wish to zoom in on the areas of high-density for a better look).
 
-Now inspect the seven-class confusion matrix in the command line using `confusionmat`.
-Are some classes being classified more accurately than others?
+__4. Evaluate the trained classifier__.
 
-Compute the number of true examples of each class from the confusion matrix.
-
-Then, for each class, compute the proportion of true examples of a class that are predicted as such: `propCorrect`.
-Plot it as a bar chart:
-
+As above, we can compute `predictedLabels` using the `predict` function, and then inspect the seven-class confusion matrix using `confusionmat`.
+For the linear SVM, we can use `Mdl_SVMlinear` (and fill in the `...`):
 ```matlab
-bar(propCorrect);
-ax = gca;
-ax.XTick = 1:length(classNames);
-ax.XTickLabel = classNames;
-xlabel('Type of star')
-ylabel('Proportion correctly classified')
+predictedLabelsLinear = predict(Mdl_SVMlinear,dataMatrix);
+[confMat,order] = confusionmat(classLabels,...)
 ```
 
-:question::question::question: __Q3:__
-Give your bar chart a title and upload it.
+(You could also look at it visually by adapting the syntax:
+`confusionchart(realLabels,predictedLabels)`).
 
-Take the simplest measure of in-sample classification performance: counting the number of correct classification events.
-Does this metric improve in the case of the `'rbf'` kernel relative to the `'linear'` kernel?
+What do the elements of this confusion matrix mean?
+
+Are some classes being classified more accurately than others?
+
+Notice that correctly classified examples of each class appear along the diagonal of `confMat`.
+Use the `trace` function to count the total number of correctly classified stars, and divide it by the total number of stars to get the classification accuracy.
+
+:question::question::question: __Q3:__
+Upload the lines of code you used to compute the classification accuracy from `confMat`.
+
+
+Compute the classification accuracy for the `'rbf'` kernel and the `'linear'` kernel.
+Does the accuracy improve
 
 :question::question::question: __Q4:__
 Does a boost in in-sample accuracy from applying a more complex model always represent an improvement?
 Why or why not?
 
-#### :fire::fire::fire: (Optional): Class Imbalance
+#### :fire::fire: _(Optional)_ Proportion correct per class
+
+Compute the number of true examples of each class from the confusion matrix, `confMat` as an appropriate `sum()`.
+
+Then compute the proportion of correctly predicted true examples of each class as the ratio: `propCorrect`.
+
+Plot it as a bar chart:
+```matlab
+PlotPropCorrect(propCorrect,classLabels)
+```
+
+Repeating for both types of classifiers, can you tell whether each type of  classifier has its own strengths and weaknesses?
+
+#### :fire::fire::fire: _(Optional)_: Class Imbalance
+
 A classifier that is simply trying to maximize the number of correct classification events will be biased towards over-represented classes.
 Look at the classification accuracy of each class (proportion of predictions of that class that match the true examples of that class).
 Does this intuition broadly hold true in the case of your classifier?
@@ -354,7 +370,7 @@ Try setting the weights such that each class contributes the same total weight.
 This is called inverse probability weighting.
 Compare the resulting `propCorrect` chart--does the classifier learn to treat the smaller classes more seriously?
 
-#### :fire::fire::fire: (Optional): More complex classifiers
+#### :fire::fire::fire: _(Optional)_: More complex classifiers
 Try different base models by altering the line `t = templateSVM('Standardize',true,'KernelFunction','linear');`
 For example, try
 * k-NN with k = 3: `t = templateKNN('NumNeighbors',3,'Standardize',true);`
@@ -371,22 +387,16 @@ Two new time series are in the `toTest` directory:
 1. `9664607.txt`
 2. `10933414.txt`
 
-You can load one as:
+You can load them using:
 ```matlab
-theFiles = {'9664607.txt','10933414.txt'};
-numFiles = length(theFiles);
-X = cell(numFiles,1);
-for i = 1:numFiles
-    fileLocation = fullfile('toTest',theFiles{i});
-    X{i} = dlmread(fileLocation,'',1,1);
-end
+X = LoadTestData();
 ```
 
 Compute your two features for both of these stars, storing your results as a `newStarFeatures` matrix.
 
-Plot the new stars in your two-dimensional feature space, including the class boundaries trained above (`gridPredictions`).
+Plot the new stars in your two-dimensional feature space, including the class predictions from a model trained above (using `gridPredictions`).
 
-Now we can use the `predict` function to classify each of these stars based on their features, using the patterns we learned and stored in the `trainedModel` above:
+Now we can use the `predict` function to classify each of these stars based on their features, using the patterns we learned and stored in a `trainedModel` from above:
 
 ```matlab
 modelPredictions = predict(trainedModel,newStarFeatures);
@@ -395,11 +405,10 @@ modelPredictions = predict(trainedModel,newStarFeatures);
 :question::question::question: __Q5:__
 What does your best model predict to be the identity of these two new stars?
 
-
-### :fire::fire::fire: (Optional) A massive feature space
+### :fire::fire::fire::fire::fire::fire: (Optional) A massive feature space
 Our results are pretty impressive from such a simple two-dimensional space of power spectral density-based features.
 We can improve our performance (and predictions) dramatically by adding better time-series features.
-We have already done the calculation for you (__FYI__: you can access the software we used for mass time-series feature extraction [here](https://github.com/benfulcher/hctsa)).
+We have already done the calculation for you (using [hctsa](https://github.com/benfulcher/hctsa) time-series feature extraction software).
 The feature data is in `hctsa_datamatrix.csv` and information about the features is in `hctsa_features.csv`.
 Load in the data and retrain your model in this high-dimensional feature space.
 Do you get better performance?
