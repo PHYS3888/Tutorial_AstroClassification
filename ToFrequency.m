@@ -1,17 +1,15 @@
-function ToFrequency(x,fs,doPlot,oldMatlab)
+function ToFrequency(x,doPlot,oldMatlab)
 
-% Set default sampling rate:
-if nargin < 2
-    fs = 1;
-end
 % Set default plotting behavior:
-if nargin < 3
+if nargin < 2
     doPlot = true;
 end
-if nargin < 4
+if nargin < 3
     oldMatlab = false;
 end
 %-------------------------------------------------------------------------------
+% Set the sampling rate:
+fs = KeplerSamplingRate();
 
 N = length(x);
 t = (1:1/fs:N/fs)';

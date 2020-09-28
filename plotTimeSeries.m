@@ -11,10 +11,10 @@ if nargin < 3
     maxL = 1000;
 end
 %-------------------------------------------------------------------------------
-% FILL IN THE BLANKS ... BELOW:
+% FILL IN THE BLANK (labeled '...') BELOW:
 
 % Sampling rate (Hz) of Kepler data:
-fs = ...;
+fs = KeplerSamplingRate();
 
 % Retrieve data:
 x = TimeSeries.Data{plotIndex};
@@ -30,5 +30,7 @@ xlabel('Time (day)')
 
 title(sprintf('%s (%s)',TimeSeries.Name{plotIndex},...
                         TimeSeries.Keywords{plotIndex}))
+
+xlim([1,tDay(maxL)])
 
 end

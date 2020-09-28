@@ -1,4 +1,4 @@
-function myFeatures = MyTwoFeatures(x,fs)
+function myFeatures = MyTwoFeatures(x)
 % Computes two features of an input time series, x
 %-------------------------------------------------------------------------------
 
@@ -11,23 +11,27 @@ y = zscore(x);
 % (now work off of y)
 
 %-------------------------------------------------------------------------------
+% Load in the Kepler sampling rate, fs:
+fs = KeplerSamplingRate();
+
 % Compute power spectral density:
 t = (1:1/fs:N/fs)';
 xTable = timetable(seconds(t),y);
 [pxx,f] = pspectrum(xTable);
 
+%-------------------------------------------------------------------------------
 % Compute two features of the power spectrum
 myFeatures = zeros(2,1);
 
 %-------------------------------------------------------------------------------
-% Feature 1
-% (e.g., max of power spectral density)
+% Feature 1: peaks of the power spectrum
+% (e.g., max of power spectral density, pxx)
 
 myFeatures(1) = ...;
 
 %-------------------------------------------------------------------------------
 % Feature 2
-% (e.g., use bandpower)
+% (e.g., use bandpower on the power spectrum of y):
 
 myFeatures(2) = bandpower(...);
 

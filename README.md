@@ -57,26 +57,26 @@ All metadata for object `i` is in the row `i`: `TimeSeries(i,:)`.
 
 Input some of these types of commands to verify that you understand how to work with Matlab tables.
 
+### Sampling frequency:
+
+:question::question::question: __Q1:__
+What is the sampling rate, `fs` (Hz)?
+Implement your result into the `KeplerSamplingRate` function, which will allow all of the functions used in this tutorial to be properly calibrated to the Kepler light-curve data.
+
 #### Plot a light curve
 
-Extend the template function `plotTimeSeries`, to plot the light curve (brightness over time) of a selected star.
+We will use `plotTimeSeries`, to plot the light curve (brightness over time) of a selected star.
 As you'll see in the template provided, the function takes three inputs:
 1. The `TimeSeries` table,
 2. An index of a time series to plot, and
 3. A maximum number of samples to plot, `maxL`.
 
-__You'll need to fill in two missing parts of the code (labeled `...`)__:
-1. Set the Kepler sampling rate, `fs` (Hz), and
-2. Convert the time axis from seconds to days.
+For the `plotTimeSeries` function to work, you'll need to have set `fs` correctly in the `KeplerSamplingRate` function (above), and you'll also need to fill in the missing line of code in `plotTimeSeries` to convert the time axis from seconds, `tSec`, to days, `tDay`.
 
-Pick any star to plot, and check that you get a good visualization by running `plotTimeSeries` appropriately.
-Zoom in to see if you can discern any interesting temporal structure.
+Once you're ready, pick some indices for stars to plot, and in each case verify that you get a good visualization by running `plotTimeSeries` appropriately.
+If you need to, zoom in to see whether you can discern any interesting structure in the dynamics.
 
 _Note:_ Don't worry if you spot some flat lines: these are artifactual periods (or missing data), that have been set to the signal's mean value.
-
-:question::question::question: __Q1:__
-What is the sampling rate, `fs` (Hz)?
-Given `fs`, and a time-series containing `N` samples, what code will give you the correct `timeAxis` variable (in seconds)?
 
 ### _Context_: Feature extraction
 
@@ -84,13 +84,14 @@ Recall from lectures that supervised learning problems can be represented in the
 1. An observation x feature data matrix (`X`), and
 2. A target output vector (`y`).
 
-In this tutorial we are going to represent time series by their different properties in the matrix `X`, and label each by one of seven categories of star in `y`.
+In this tutorial we are going to represent time series by their different properties in the matrix `X`, and label each by one of seven categories of stars in `y`.
 
 ![](img/problemSetUp.png)
 
 ### Two-Class Classification
 
-Seven classes are a bit daunting; let's build some confidence by starting with a simpler two-class problem.
+Seven classes is a bit daunting!
+Let's first build some confidence by starting with a simpler two-class problem.
 
 #### Filtering to a subset
 
@@ -114,75 +115,72 @@ Verify that you get 385 matches by counting the rows of the new table that conta
 height(TimeSeriesTwoClass)
 ```
 
-#### Plotting in the time and frequency domain
+#### Plotting in the time and frequency domains
 
 Periodicities are ubiquitous in nature, and a physicist's first instinct when working with a time series is to transform it to the frequency domain.
 Being almost completely Sydney Uni-trained physicists, you should all be familiar with estimating the Fourier transform of a time series.
 A simple implementation of this transform is in the `ToFrequency` function.
-You'll need to specify the sampling frequency, `fs` (Hz), to get a valid time axis in the code below that plots the Fourier power spectrum for the first :
+In producing a valid time axis, the function uses your `KeplerSamplingRate` function to set the sampling frequency.
 
+Let's plot five examples of contact binary stars in the time domain (`plotTimeSeries`) and the frequency domain `ToFrequency`.
+First we'll need indices of all contact binaries (which have the label `contact`) in the `TimeSeriesTwoClass` table, which we can get using the `strcmp` function to find matches to the label `'contact'`:
 ```matlab
-doPlot = true;
-fs = ...;
-ToFrequency(TimeSeriesTwoClass.Data{1},fs,doPlot);
+contactIndicies = find(strcmp(TimeSeriesTwoClass.Keywords,'contact'));
 ```
 
-Fill in the missing code below to plot five examples of a `contact` star in both the time domain (using your `plotTimeSeries` function you constructed above) and in the frequency domain (using `ToFrequency`):
-
+Then you can run the following code to plot the first 5 of them:
 ```matlab
-% Indices of contact binary stars ('contact') (in TimeSeriesTwoClass)
-contactIndicies = find(...);
-
-% Settings:
-numToPlot = 5; % Number of examples to plot
-maxL = 500; % Plot up to this maximum number of samples in the time domain
-fs = ...;
-
-% Generate the plots:
-f = figure('color','w');
-for i = 1:numToPlot
-    indexToPlot = contactIndicies(i);
-
-    % Time Series
-    subplot(numToPlot,2,(i-1)*2+1)
-    plotTimeSeries(TimeSeriesTwoClass,indexToPlot,maxL);
-
-    % Power Spectrum
-    subplot(numToPlot,2,i*2)
-    ToFrequency(TimeSeriesTwoClass.Data{indexToPlot},fs,true);
-end
+PlotTimeFrequency(TimeSeriesTwoClass,contactIndicies,5)
 ```
 
-Repeat for the non-variable (`nonvar`) stars.
+From the titles, verify that all of the plotted examples are of the right class (`'contact'`), then repeat for the non-variable (`'nonvar'`) stars.
 
-From inspecting just five examples of each type, what types of frequency-domain features do you think will help you classify the two types of stars?
+From inspecting just five examples of each type, do you think there are structures in the frequency domain that might distinguish these two classes of stars?
+What types of properties of the Fourier power spectrum do you think will help you classify these two types of stars?
 
 ### Choose Your Own Features
 
-Write a new function, `f = MyTwoFeatures(x,fs);` that takes in a time-series, `x`, and its sampling rate, `fs` (the same for all _Kepler_ light curves analyzed here), and outputs two features (real numbers stored in the two-element vector, `f`), that represent two different properties of the power spectrum.
-A template has been worked up for you, including a _z_-score pre-processing step (which ensures that all light curves are places on an equivalent scale).
+So now we have now wet our toes, we can get to the meat of our task.
+
+Remember what our goal is?
+It's to compute two numbers ('features') that can capture useful differences between `'contact'` and `'nonvar'` stars.
+
+You will need to complete the function, `f = MyTwoFeatures(x);` that takes in a time-series, `x`, and outputs two features (real numbers stored in the two-element vector, `f`), that represent two different properties of the power spectrum.
+A template has been worked up for you, including a _z_-score pre-processing step (which ensures that all light curves are placed on an equivalent scale, regardless of their absolute brightness).
+
 You just need to implement the calculation of two features, as described below.
 
-#### Feature 1: Peak in the power spectrum
+#### _Feature 1_: Peak in the power spectrum
 
-Perhaps you noticed that the contact binaries have a characteristic oscillation.
+Perhaps you noticed that the contact binaries have characteristic oscillations.
 Let's first measure how 'peaky' the power spectrum is.
 The simplest metric for quantifying this is to simply take the `max` of the power spectral density.
 
-:fire::fire: Feel free to instead implement an alternative feature, like the `skewness`, or an explicit peak-finding functions like `findpeaks`---anything that implements this idea of generating a _single real number_ that captures the peakiness of the power spectrum.
+:fire::fire: _(Optional)_ :fire::fire:
+Feel free to instead implement an alternative feature, like the `skewness`, or an explicit peak-finding functions like `findpeaks`---anything that implements this idea of generating a _single real number_ that captures the peakiness of the power spectrum.
 
-#### Feature 2: Power in a frequency band
+#### _Feature 2_: Power in a frequency band
 
-Oscillatory structure can also be concentrated in a particular frequency range.
+Oscillatory structure may also be concentrated in a particular frequency range.
 Looking again at the frequency spectra you plotted above, pick a frequency range that you think is going to be informative of the differences between contact binaries and non-variable stars.
 Implement this as your second feature in `MyTwoFeatures`.
 
-_Note_: If you use the `bandpower` function, note that the frequency range should be measured in Hz.
+_Note_: You should use the `bandpower` function, but ensure that your frequency range is measured in Hz.
 
 #### Feature space
 
 Now loop over all time series in `TimeSeriesTwoClass`, computing your two features for each.
-Store the result as the 385 x 2 (time series x feature) matrix, `dataMatrixTwo`.
+Store the result as the 385 x 2 (time series x feature) matrix, `dataMatrixTwoClass`.
+
+Here's some template code (fill in `...`):
+
+```matlab
+numTimeSeries = height(TimeSeriesTwoClass);
+dataMatrixTwoClass = zeros(numTimeSeries,2);
+for i = 1:numTimeSeries
+    dataMatrixTwoClass(i,:) = ...;
+end
+```
 
 :milky_way::stars::satisfied::star2::bowtie::star2::smile::star2::laughing::stars::milky_way:
 
@@ -190,14 +188,15 @@ Have a brief celebration!
 You have just generated the main programmatic machinery to convert light curves into an interpretable two-dimensional feature space that will enable the automatic classification of Kepler stars!
 
 #### Plotting
+
 Did you notice?: We now have the two ingredients we need for statistical learning:
-1. An observation x feature data matrix (`dataMatrixTwo`)
+1. An observation x feature data matrix (`dataMatrixTwoClass`)
 2. Ground-truth labels for each item (`TimeSeriesTwoClass.Keywords`).
 
-We should first denote these labels as a `categorical` data type (a set of discrete categorical labels) instead of storing them as lots of pieces of text:
+We should first denote these labels as a `categorical` data type (a set of discrete categories) instead of storing them as lots of pieces of text:
 
 ```matlab
-outputLabelsTwo = categorical(TimeSeriesTwoClass.Keywords);
+outputLabelsTwoClass = categorical(TimeSeriesTwoClass.Keywords);
 ```
 
 Let's first see how our two features are doing at separating the two classes.
@@ -205,128 +204,115 @@ We can use the `gscatter` function to label our observations by their class:
 
 ```matlab
 figure('color','w')
-gscatter(dataMatrixTwo(:,1),dataMatrixTwo(:,2),outputLabelsTwo)
-xlabel('My Feature 1')
-ylabel('My Feature 2')
+gscatter(dataMatrixTwoClass(:,1),dataMatrixTwoClass(:,2),outputLabelsTwoClass)
+xlabel('My Peakiness Feature')
+ylabel('My Band Power Feature')
 ```
 
-Give each axis an appropriate label (corresponding to how you designed each feature, adding units where appropriate).
+Depending on the choices you made for each feature, give each axis an appropriately descriptive label.
 
-Do your features separate the two classes?
+How well do your two features separate the two classes?
+
 Given your understanding of what your features are measuring, can you interpret why the two classes are where they are in the feature space?
+
 Are there any outliers?
 
 ### Training a classifier
 
-We went through a few examples of different classification strategies in the lecture, including:
-* boundary-based linear discriminant analysis,
-* threshold-boundary decision trees,
-* neighbor-based _k_-nearest-neighbor (_k_-NN).
+So now we want to learn a rule to separate these two classes.
+We're going to focus on a support vector machine (SVM) classifier, which can (crudely) be viewed as a souped-up variant of the single neuron classifier we studied earlier.
 
-Today we're going to focus on a support vector machine classifier (SVM), which can (extremely simply) be viewed as a souped-up variant of linear discriminant analysis.
-We will consider two variants:
-1. `'linear'` SVM, in which each pair of classes is separated by a linear boundary, and
-2. `'rbf'` kernel SVM, in which a local Gaussian distribution centered around each data point can generate more complicated nonlinear boundaries between pairs of classes.
-
-Let's first train a linear SVM to distinguish contact binaries from nonvariable stars in our two-dimensional feature space:
+Let's first __train SVM models__ to distinguish contact binaries from non-variable stars in our two-dimensional feature space.
+We will use the `trainModels` function which takes in our observations (`dataMatrixTwoClass`) and the labels we want to the model to predict (`outputLabelsTwoClass`):
 
 ```matlab
-Mdl_linearSVM = fitcsvm(dataMatrixTwo,outputLabelsTwo,...
-                    'Standardize',true,...
-                    'KernelFunction','linear');
+[Mdl_SVMlinear,Mdl_SVMnonlinear] = trainModels(dataMatrixTwoClass,outputLabelsTwoClass)
 ```
 
 You just did 'machine learning'.
 Easy, huh?! :sweat_smile:
 
-We can now use this trained model, stored in `Mdl_linearSVM`, to get the predicted labels for the data we fed in:
+We can now use the trained linear model, stored in the variable `Mdl_linearSVM`, to get the predicted labels for any new star.
+For example, we can evaluate the predictions on the data we fed in by running:
+
 ```matlab
-predictedLabelsTwo = predict(Mdl_linearSVM,dataMatrixTwo);
+predictedLabelsTwoClass = predict(Mdl_linearSVM,dataMatrixTwoClass);
 ```
 
-Use the logical AND condition (`&&`) between your assigned labels (`outputLabelsTwo`) and predicted labels (`predictedLabelsTwo`) to count how many `nonvar` stars were predicted to be `nonvar` stars?
-Repeat for `contact`.
+To see how well we did, we can construct a confusion matrix as:
 
-Does this simple linear SVM classifier do well at distinguishing these two types of stars in your feature space?
-
-We can construct a confusion matrix as:
 ```matlab
-[confMat,order] = confusionmat(outputLabelsTwo,predictedLabelsTwo)
-```
-Do the results match the diagonal entries you computed manually above?
-
-Now train a more complex model that uses a radial basis kernel function (`theKernel = 'rbf'`):
-```matlab
-Mdl_rbfSVM = fitcsvm(dataMatrixTwo,outputLabelsTwo,...
-                    'Standardize',true,...
-                    'KernelFunction','rbf',...
-                    'KernelScale','auto');
+[confMat,order] = confusionmat(outputLabelsTwoClass,predictedLabelsTwoClass)
 ```
 
-If you get less than 100% prediction accuracy in the linear case, did your model's predictions improve in this nonlinear case?
+Does this simple linear SVM classifier accurately distinguish these two types of stars in your two-dimensional feature space?
 
 Now let's step back a bit to investigate how these models are behaving in our feature space.
-The `gridPredictions` function evaluates a given model across a grid of the feature space to see which parts of the feature space are predicted to be what class of star.
-<!-- You'll need to fill in a few parts (marked `...`) to make sure you understand what's going on. -->
+The `gridPredictions` function evaluates a given model across a grid of the feature space to visualize which parts of the feature space are predicted to be what class of star.
 
 ```matlab
 doPosterior = false;
-gridPredictions(Mdl_linearSVM,dataMatrixTwo,outputLabelsTwo,doPosterior);
+gridPredictions(Mdl_linearSVM,dataMatrixTwoClass,outputLabelsTwo,doPosterior);
 ```
 
+Try both:
 1. Setting `doPosterior = false` plots the predicted class at each point in feature space.
 2. Setting `doPosterior = true` plots the model-estimated probability of the star being of a given class at a given point in feature space.
 
-Do your models learn a sensible prediction profile to distinguish the two classes of stars?
-How does the boundary change between the linear (`Mdl_linearSVM`) and nonlinear (`Mdl_rbfSVM`) SVMs?
+Does your model learn a sensible prediction profile to distinguish the two classes of stars?
 
 :question::question::question: __Q2:__
-Upload a plot of the data and your trained SVM's in-sample predictions (in your two-dimensional feature space) for whichever you think looks cooler: `Mdl_linearSVM` or `Mdl_rbfSVM`.
+Upload a plot of the data and your trained linear SVM's in-sample predictions in your two-dimensional feature space.
 
-:fire::fire::fire:
+#### A Nonlinear Model
+
+Linear not good enough for you?
+
+The `trainModels` function also trained a more complex nonlinear model, `Mdl_SVMnonlinear`.
+Rather than assuming a linear boundary, this model uses a radial basis kernel function, in which a local Gaussian distribution centered around each data point generates more complicated nonlinear boundaries between pairs of classes.
+
+Repeat the code above to evaluate this more complex model.
+Check what the predictions look like in the `gridPredictions` plot for this nonlinear model, `Mdl_SVMnonlinear`, and verify the nonlinear boundary.
+
+#### :fire::fire::fire: _(Optional)_ :fire::fire::fire: Adding noise
+
 On this problem, it was not so difficult to get near (or precisely) 100% classification accuracy.
 For a challenge, play around with randomizing a proportion of labels (e.g., swap the labels on 10% of observations), or add some noise into the feature calculation (e.g., `fNoisy = f + 0.2*randn(2,1)`).
 See what happens to your prediction model, and the differences in prediction patterns between the `linear` and `rbf` kernel SVMs.
 
 ## The seven-class problem :open_mouth:
 
-Now that we're got some intuition with a couple of classes, and we're armed with a reasonable two-dimensional feature space, let's go back to the full seven-class problem.
+Now that we're got some intuition with two classes, and we're armed with a reasonable two-dimensional feature space, let's go back to the full seven-class problem.
 :muscle::metal:
 
-Repeat the steps performed above for the full dataset:
+We'll need to repeat the steps performed above for the full dataset:
 
-__Compute features__.
+__1. Compute features__.
 Use your `MyTwoFeatures` function to compute two features for each time series in the full dataset, saving the result to the 1341 x 2 matrix, `dataMatrix`.
 
-__Plot data in the feature space__.
-Extract the categorical class labels as `outputLabels`, and then plot the class distributions for all seven classes in your two-dimensional feature space using `gscatter`.
-(_Note:_ you may wish to play around with the formatting of the plot, e.g., showing points as larger crosses: `gscatter(dataMatrix(:,1),dataMatrix(:,2),outputLabels,'','x',10)`).
+__2. Plot data in the feature space__.
+Extract the categorical class labels as `outputLabels`, and then plot the class distributions for all seven classes in your two-dimensional feature space using `gscatter`, e.g., fill in the `...`:
 
-From visually inspecting the feature space, assess whether there is more or less overlap between the class distributions, and thus whether this is an easier or more difficult classification problem than the two-class problem analyzed above.
+```matlab
+classNames = categorical(TimeSeries.Keywords);
+gscatter(...,...,classNames,'','.',10)
+```
+
+From visually inspecting where different types of stars sit in the feature space, think about whether this is an easier (or more difficult) classification problem than the two-class problem we analyzed above.
+
+__3. Train a classifier :dancers::dancers::dancers:__.
 
 Now we can train a classification model for all seven types of stars!
-:dancers::dancers::dancers:
-
-The syntax is slightly different in the multi-class setting:
+As before we can get our linear and nonlinear SVM models:
 ```matlab
-% Train a multi-class SVM classification model with a given kernel function:
-classNames = categories(outputLabels);
-
-% Train a linear SVM:
-tLinear = templateSVM('Standardize',true,'KernelFunction','linear');
-Mdl_SVMlinear = fitcecoc(dataMatrix,outputLabels,'Learners',tLinear);
-
-% Train an rbf SVM:
-tRBF = templateSVM('Standardize',true,'KernelFunction','rbf',...
-            'KernelScale','auto');
-Mdl_SVMrbf = fitcecoc(dataMatrix,outputLabels,'Learners',tRBF);
+[Mdl_SVMlinear,Mdl_SVMnonlinear] = trainModels(dataMatrix,classNames);
 ```
 
 Then we can compute `predictedLabels` using the `predict` function (as above).
 
-Let's take a quick look at how we did using the `gridPredictions` function (setting `trainedModel` appropriately):
+Let's take a quick look at how we did using the `gridPredictions` function (setting `...` appropriately):
 ```matlab
-gridPredictions(trainedModel,dataMatrix,outputLabels,false);
+gridPredictions(...,dataMatrix,outputLabels,false);
 ```
 
 Does the model learn sensible classification regions for each class?
