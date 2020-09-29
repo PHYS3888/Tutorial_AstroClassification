@@ -397,7 +397,7 @@ Compute your two features for both of these stars, storing your results as a `ne
 
 Plot the new stars in your two-dimensional feature space, including the class predictions from a model trained above (using `gridPredictions`).
 
-Now we can use the `predict` function to classify each of these stars based on their features, using the patterns we learned and stored in a `trainedModel` from above:
+Now we can use the `predict` function to classify each of these stars based on their features, using the patterns we learned and stored in a linear or nonlinear `trainedModel` from above:
 
 ```matlab
 modelPredictions = predict(trainedModel,newStarFeatures);
@@ -405,6 +405,8 @@ modelPredictions = predict(trainedModel,newStarFeatures);
 
 :question::question::question: __Q5:__
 What does your best model predict to be the identity of these two new stars?
+
+You may wish to look at the time series and Fourier power spectrum of each star to see if you agree with your model's assessment.
 
 ### :fire::fire::fire::fire::fire::fire: (Optional) A massive feature space
 Our results are pretty impressive from such a simple two-dimensional space of power spectral density-based features.
