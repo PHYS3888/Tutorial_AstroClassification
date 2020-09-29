@@ -1,4 +1,4 @@
-# Tutorial: Statistical Learning
+# Tutorial 5: Classification of Kepler Light Curves
 
 In this final tutorial of the course, we will learn how to analyze a big dataset of light curves measured from [NASA's _Kepler_ mission](https://www.nasa.gov/mission_pages/kepler/overview/index.html).
 You can learn more about the _Kepler_ mission in [this YouTube video](https://www.youtube.com/watch?v=3yij1rJOefM).
@@ -196,7 +196,7 @@ Did you notice?: We now have the two ingredients we need for statistical learnin
 We should first denote these labels as a `categorical` data type (a set of discrete categories) instead of storing them as lots of pieces of text:
 
 ```matlab
-outputLabelsTwoClass = categorical(TimeSeriesTwoClass.Keywords);
+classLabelsTwoClass = categorical(TimeSeriesTwoClass.Keywords);
 ```
 
 Let's first see how our two features are doing at separating the two classes.
@@ -204,7 +204,7 @@ We can use the `gscatter` function to label our observations by their class:
 
 ```matlab
 figure('color','w')
-gscatter(dataMatrixTwoClass(:,1),dataMatrixTwoClass(:,2),outputLabelsTwoClass)
+gscatter(dataMatrixTwoClass(:,1),dataMatrixTwoClass(:,2),classLabelsTwoClass)
 xlabel('My Peakiness Feature')
 ylabel('My Band Power Feature')
 ```
@@ -223,10 +223,10 @@ So now we want to learn a rule to separate these two classes.
 We're going to focus on a support vector machine (SVM) classifier, which can (crudely) be viewed as a souped-up variant of the single neuron classifier we studied earlier.
 
 Let's first __train SVM models__ to distinguish contact binaries from non-variable stars in our two-dimensional feature space.
-We will use the `trainModels` function which takes in our observations (`dataMatrixTwoClass`) and the labels we want to the model to predict (`outputLabelsTwoClass`):
+We will use the `trainModels` function which takes in our observations (`dataMatrixTwoClass`) and the labels we want to the model to predict (`classLabelsTwoClass`):
 
 ```matlab
-[Mdl_SVMlinear,Mdl_SVMnonlinear] = trainModels(dataMatrixTwoClass,outputLabelsTwoClass)
+[Mdl_SVMlinear,Mdl_SVMnonlinear] = trainModels(dataMatrixTwoClass,classLabelsTwoClass)
 ```
 
 You just did 'machine learning'.
@@ -242,7 +242,7 @@ predictedLabelsTwoClass = predict(Mdl_linearSVM,dataMatrixTwoClass);
 To see how well we did, we can construct a confusion matrix as:
 
 ```matlab
-[confMat,order] = confusionmat(outputLabelsTwoClass,predictedLabelsTwoClass)
+[confMat,order] = confusionmat(classLabelsTwoClass,predictedLabelsTwoClass)
 ```
 
 Does this simple linear SVM classifier accurately distinguish these two types of stars in your two-dimensional feature space?
