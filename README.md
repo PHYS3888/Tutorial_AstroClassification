@@ -393,6 +393,7 @@ You can load them using:
 X = LoadTestData();
 ```
 
+You now have the time series for star 9664607 as `X{1}` and the time series for star 10933414 as `X{2}`.
 Compute your two features for both of these stars, storing your results as a `newStarFeatures` matrix.
 
 Plot the new stars in your two-dimensional feature space, including the class predictions from a model trained above (using `gridPredictions`).
