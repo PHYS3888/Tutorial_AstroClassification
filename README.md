@@ -232,11 +232,11 @@ We will use the `trainModels` function which takes in our observations (`dataMat
 You just did 'machine learning'.
 Easy, huh?! :sweat_smile:
 
-We can now use the trained linear model, stored in the variable `Mdl_linearSVM`, to get the predicted labels for any new star.
+We can now use the trained linear model, stored in the variable `Mdl_SVMlinear`, to get the predicted labels for any new star.
 For example, we can evaluate the predictions on the data we fed in by running:
 
 ```matlab
-predictedLabelsTwoClass = predict(Mdl_linearSVM,dataMatrixTwoClass);
+predictedLabelsTwoClass = predict(Mdl_SVMlinear,dataMatrixTwoClass);
 ```
 
 To see how well we did, we can construct a confusion matrix as:
@@ -252,7 +252,7 @@ The `gridPredictions` function evaluates a given model across a grid of the feat
 
 ```matlab
 doPosterior = false;
-gridPredictions(Mdl_linearSVM,dataMatrixTwoClass,outputLabelsTwo,doPosterior);
+gridPredictions(Mdl_SVMlinear,dataMatrixTwoClass,outputLabelsTwo,doPosterior);
 ```
 
 Try both:
@@ -272,7 +272,7 @@ Repeat the code above to evaluate this more complex model.
 Check what the predictions look like in the `gridPredictions` plot for this nonlinear model, `Mdl_SVMnonlinear`, and verify the nonlinear boundary.
 
 :question::question::question: __Q2:__
-Upload a `gridPredictions` plot of the data and the predictions of one of your trained SVMs (`Mdl_linearSVM` or `Mdl_SVMnonlinear`) in your two-dimensional feature space.
+Upload a `gridPredictions` plot of the data and the predictions of one of your trained SVMs (`Mdl_SVMlinear` or `Mdl_SVMnonlinear`) in your two-dimensional feature space.
 Make sure the axes are labeled to highlight your two features.
 
 #### :fire::fire::fire: _(Optional)_ :fire::fire::fire: Adding noise
@@ -333,15 +333,16 @@ What do the elements of this confusion matrix mean?
 
 Are some classes being classified more accurately than others?
 
+#### Classification accuracy
+
 Notice that correctly classified examples of each class appear along the diagonal of `confMat`.
 Use the `trace` function to count the total number of correctly classified stars, and divide it by the total number of stars to get the classification accuracy.
 
 :question::question::question: __Q3:__
 Upload the lines of code you used to compute the classification accuracy from `confMat`.
 
-
 Compute the classification accuracy for the `'rbf'` kernel and the `'linear'` kernel.
-Does the accuracy improve
+Does the accuracy improve?
 
 :question::question::question: __Q4:__
 Does a boost in in-sample accuracy from applying a more complex model always represent an improvement?
