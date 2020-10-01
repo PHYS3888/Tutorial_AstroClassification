@@ -1,4 +1,4 @@
-function plotTimeSeries(TimeSeries,plotIndex,maxL)
+function PlotTimeSeries(TimeSeries,plotIndex,maxL)
 % Plot a selected time series, indexed as plotIndex,
 % from a table of time series, TimeSeries.
 %-------------------------------------------------------------------------------
