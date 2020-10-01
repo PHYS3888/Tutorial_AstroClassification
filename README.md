@@ -312,7 +312,7 @@ As before we can get our linear and nonlinear SVM models:
 
 Let's take a quick look at how we did using the `gridPredictions` function (setting `...` as the `Mdl` of choice):
 ```matlab
-gridPredictions(Mdl_*,dataMatrix,classLabels,false);
+gridPredictions(...,dataMatrix,classLabels,false);
 ```
 
 Does the model learn sensible classification regions for each class?
