@@ -293,7 +293,7 @@ __1. Compute features__.
 Use your `MyTwoFeatures` function to compute two features for each time series in the full dataset, saving the result to the 1341 x 2 matrix, `dataMatrix`.
 
 __2. Plot data in the feature space__.
-Extract the categorical class labels as `outputLabels`, and then plot the class distributions for all seven classes in your two-dimensional feature space using `gscatter`, e.g., fill in the `...`:
+Extract the categorical class labels as `classLabels`, and then plot the class distributions for all seven classes in your two-dimensional feature space using `gscatter`, e.g., fill in the `...`:
 
 ```matlab
 classLabels = categorical(TimeSeries.Keywords);
@@ -312,7 +312,7 @@ As before we can get our linear and nonlinear SVM models:
 
 Let's take a quick look at how we did using the `gridPredictions` function (setting `...` as the `Mdl` of choice):
 ```matlab
-gridPredictions(Mdl_*,dataMatrix,outputLabels,false);
+gridPredictions(Mdl_*,dataMatrix,classLabels,false);
 ```
 
 Does the model learn sensible classification regions for each class?
