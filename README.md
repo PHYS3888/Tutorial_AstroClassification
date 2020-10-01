@@ -97,7 +97,7 @@ Let's first build some confidence by starting with a simpler two-class problem.
 
 Start by filtering down to just two classes: `contact` and `nonvar`.
 
-You can achieve this by the following steps (fill in the blank `...`).
+You can achieve this by the following steps (fill in the blank `...`):
 
 ```matlab
 % 1. Define the classes to keep:
@@ -106,7 +106,8 @@ classesToKeep = {'contact','nonvar'};
 % 2. Find matches by applying the ismember function to the Keywords column of the Timeseries table:
 isMatch = ismember(TimeSeries.Keywords,classesToKeep);
 
-% 3. Apply the logical filter, isMatch, to rows of the original TimeSeries table to generate a new table, TimeSeriesTwoClass:
+% 3. Apply the logical filter, isMatch, to rows of the original TimeSeries table
+% to generate a new table, TimeSeriesTwoClass:
 TimeSeriesTwoClass = ...;
 ```
 
