@@ -253,7 +253,7 @@ The `gridPredictions` function evaluates a given model across a grid of the feat
 
 ```matlab
 doPosterior = false;
-gridPredictions(Mdl_SVMlinear,dataMatrixTwoClass,outputLabelsTwo,doPosterior);
+gridPredictions(Mdl_SVMlinear,dataMatrixTwoClass,classLabelsTwoClass,doPosterior);
 ```
 
 Try both:

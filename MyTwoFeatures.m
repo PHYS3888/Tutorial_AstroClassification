@@ -8,6 +8,8 @@ function myFeatures = MyTwoFeatures(x)
 % ---
 % Start by z-scoring to remove arbitrary variance-dependence
 y = zscore(x);
+% Length:
+N = length(y);
 % (now work off of y)
 
 %-------------------------------------------------------------------------------
