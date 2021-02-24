@@ -61,6 +61,8 @@ Input some of these types of commands to verify that you understand how to work 
 
 :question::question::question: __Q1:__
 What is the sampling rate, `fs` (Hz)?
+Give your answer in scientific notation to four significant figures.
+
 Implement your result into the `KeplerSamplingRate` function, which will allow all of the functions used in this tutorial to be properly calibrated to the Kepler light-curve data.
 
 #### Plot a light curve
@@ -274,7 +276,7 @@ Check what the predictions look like in the `gridPredictions` plot for this nonl
 
 :question::question::question: __Q2:__
 Upload a `gridPredictions` plot of the data and the predictions of one of your trained SVMs (`Mdl_SVMlinear` or `Mdl_SVMnonlinear`) in your two-dimensional feature space.
-Make sure the axes are labeled to highlight your two features.
+Make sure the axes are labeled to clearly describe what your two features are computing.
 
 #### :fire::fire::fire: _(Optional)_ :fire::fire::fire: Adding noise
 
@@ -340,10 +342,10 @@ Notice that correctly classified examples of each class appear along the diagona
 Use the `trace` function to count the total number of correctly classified stars, and divide it by the total number of stars to get the classification accuracy.
 
 :question::question::question: __Q3:__
-Upload the lines of code you used to compute the classification accuracy from `confMat`.
+Upload the line(s) of code that, given a confusion matrix, `confMat`, computes the classification accuracy.
 
-Compute the classification accuracy for the `'rbf'` kernel and the `'linear'` kernel.
-Does the accuracy improve?
+Compute the classification accuracy for the linear and nonlinear kernels.
+Does the accuracy improve with the more complex, nonlinear kernel?
 
 :question::question::question: __Q4:__
 Does a boost in in-sample accuracy from applying a more complex model always represent an improvement?
