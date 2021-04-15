@@ -16,7 +16,7 @@ for i = 1:numToPlot
 
     % Time Series
     subplot(numToPlot,2,(i-1)*2+1)
-    plotTimeSeries(TimeSeries,indexToPlot,maxL);
+    PlotTimeSeries(TimeSeries,indexToPlot,maxL);
 
     % Power Spectrum
     subplot(numToPlot,2,i*2)
