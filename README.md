@@ -1,21 +1,22 @@
-# Tutorial 5: Classification of Kepler Light Curves
+# PHYS3888 Computer Lab: Classifying Kepler Light Curves
 
-In this final tutorial of the course, we will learn how to analyze a big dataset of light curves measured from [NASA's _Kepler_ mission](https://www.nasa.gov/mission_pages/kepler/overview/index.html).
+In this tutorial, we will learn how to analyze a dataset of light curves measured from [NASA's _Kepler_ mission](https://www.nasa.gov/mission_pages/kepler/overview/index.html).
 You can learn more about the _Kepler_ mission in [this YouTube video](https://www.youtube.com/watch?v=3yij1rJOefM).
 
-![](img/starryKepler.png)
+![Kepler](img/starryKepler.png)
 
-Gone are the days of manually observing and storing a handful of stars; modern astronomy is characterized by datasets of unprecedented size and complexity.
+Gone are the days of manually observing and storing a handful of stars; modern astronomy is characterized by datasets of unprecedented size and complexity :milky_way:.
 Because it is unfeasible for human researchers to manually sift through datasets of this magnitude, research methods have adapted: modern astronomers use statistical learning methods to find and quantify patterns in big astrophysical datasets.
 
-In this tutorial, you will work through the techniques and concepts introduced in the lecture to find characteristic of different stars from NASA's _Kepler_ mission.
-By the end of the tutorial, you will have developed a simple algorithm to automatically detect different types of stars from measuring the variation in their brightness measured repeatedly across time, or a [light curve](https://imagine.gsfc.nasa.gov/science/toolbox/timing1.html).
+In this tutorial, you will work through the techniques and concepts introduced in the lecture to analyze data from the _Kepler_ mission.
+By the end of the tutorial, you will have developed a simple algorithm to  automatically distinguish different types of stars from patterns in how their brightness varies over time.
+This repeated measurement of brightness over time is called a [_light curve_](https://imagine.gsfc.nasa.gov/science/toolbox/timing1.html).
 
 The amazing _Kepler_ light curve time series that we will be analyzing today takes a brightness measurement every 29.45 minutes.
 
-### Background
+## Background
 
-Today we will focus on the problem of predicting a star's identity from the properties of its light curve.
+Today we'll focus on the problem of predicting a star's identity from the properties of its light curve.
 
 Is this problem a supervised or unsupervised problem?
 Is it a classification or regression problem?
@@ -33,7 +34,7 @@ As shown in the plot below, there are seven different classes of object that we'
 Take a moment to inspect a representative example of each class in the time-domain and frequency-domain plots shown below.
 Just looking at the data, what types of properties do you think are going to be useful in distinguishing these seven types of stars?
 
-![](img/classTimeSeries.png)
+![Time and frequency domain light curves](img/classTimeSeries.png)
 
 ### Exploring the dataset
 
@@ -69,6 +70,7 @@ Implement your result into the `KeplerSamplingRate` function, which will allow a
 
 We will use `PlotTimeSeries`, to plot the light curve (brightness over time) of a selected star.
 As you'll see in the template provided, the function takes three inputs:
+
 1. The `TimeSeries` table,
 2. An index of a time series to plot, and
 3. A maximum number of samples to plot, `maxL`.
@@ -83,12 +85,13 @@ _Note:_ Don't worry if you spot some flat lines: these are artifactual periods (
 ### _Context_: Feature extraction
 
 Recall from lectures that supervised learning problems can be represented in the form of:
+
 1. An observation x feature data matrix (`X`), and
 2. A target output vector (`y`).
 
 In this tutorial we are going to represent time series by their different properties in the matrix `X`, and label each by one of seven categories of stars in `y`.
 
-![](img/problemSetUp.png)
+![Supervised learning set up](img/problemSetUp.png)
 
 ### Two-Class Classification
 
@@ -114,6 +117,7 @@ TimeSeriesTwoClass = ...;
 ```
 
 Verify that you get 385 matches by counting the rows of the new table that contains just `'contact'` and `'nonvar'` stars:
+
 ```matlab
 height(TimeSeriesTwoClass)
 ```
@@ -127,11 +131,13 @@ In producing a valid time axis, the function uses your `KeplerSamplingRate` func
 
 Let's plot five examples of contact binary stars in the time domain (`PlotTimeSeries`) and the frequency domain `ToFrequency`.
 First we'll need indices of all contact binaries (which have the label `contact`) in the `TimeSeriesTwoClass` table, which we can get using the `strcmp` function to find matches to the label `'contact'`:
+
 ```matlab
 contactIndicies = find(strcmp(TimeSeriesTwoClass.Keywords,'contact'));
 ```
 
-Then you can run the following code to plot the first 5 of them:
+Then you can run the following code to plot the first five of them:
+
 ```matlab
 PlotTimeFrequency(TimeSeriesTwoClass,contactIndicies,5)
 ```
@@ -193,6 +199,7 @@ You have just generated the main programmatic machinery to convert light curves 
 #### Plotting
 
 Did you notice?: We now have the two ingredients we need for statistical learning:
+
 1. An observation x feature data matrix (`dataMatrixTwoClass`)
 2. Ground-truth labels for each item (`TimeSeriesTwoClass.Keywords`).
 
@@ -259,6 +266,7 @@ gridPredictions(Mdl_SVMlinear,dataMatrixTwoClass,classLabelsTwoClass,doPosterior
 ```
 
 Try both:
+
 1. Setting `doPosterior = false` plots the predicted class at each point in feature space.
 2. Setting `doPosterior = true` plots the model-estimated probability of the star being of a given class at a given point in feature space.
 
@@ -308,11 +316,13 @@ __3. Train a classifier :dancers::dancers::dancers:__.
 
 Now we can train a classification model for all seven types of stars!
 As before we can get our linear and nonlinear SVM models:
+
 ```matlab
 [Mdl_SVMlinear,Mdl_SVMnonlinear] = trainModels(dataMatrix,classLabels);
 ```
 
 Let's take a quick look at how we did using the `gridPredictions` function (setting `...` as the `Mdl` of choice):
+
 ```matlab
 gridPredictions(...,dataMatrix,classLabels,false);
 ```
@@ -324,6 +334,7 @@ __4. Evaluate the trained classifier__.
 
 As above, we can compute `predictedLabels` using the `predict` function, and then inspect the seven-class confusion matrix using `confusionmat`.
 For the linear SVM, we can use `Mdl_SVMlinear` (and fill in the `...`):
+
 ```matlab
 predictedLabelsLinear = predict(Mdl_SVMlinear,dataMatrix);
 [confMat,order] = confusionmat(classLabels,...)
@@ -336,7 +347,7 @@ What do the elements of this confusion matrix mean?
 
 Are some classes being classified more accurately than others?
 
-#### Classification accuracy
+### Classification accuracy
 
 Notice that correctly classified examples of each class appear along the diagonal of `confMat`.
 Use the `trace` function to count the total number of correctly classified stars, and divide it by the total number of stars to get the classification accuracy.
@@ -358,6 +369,7 @@ Compute the number of true examples of each class from the confusion matrix, `co
 Then compute the proportion of correctly predicted true examples of each class as the ratio: `propCorrect`.
 
 Plot it as a bar chart:
+
 ```matlab
 PlotPropCorrect(propCorrect,classLabels)
 ```
@@ -375,11 +387,13 @@ This is called inverse probability weighting.
 Compare the resulting `propCorrect` chart--does the classifier learn to treat the smaller classes more seriously?
 
 #### :fire::fire::fire: _(Optional)_: More complex classifiers
+
 Try different base models by altering the line `t = templateSVM('Standardize',true,'KernelFunction','linear');`
-For example, try
-* k-NN with k = 3: `t = templateKNN('NumNeighbors',3,'Standardize',true);`
-* Decision tree: `t = templateTree('Surrogate','off');`
-* RBF-SVM: `t = templateSVM('Standardize',true,'KernelFunction','rbf','KernelScale','auto');`
+For example, try:
+
+- k-NN with k = 3: `t = templateKNN('NumNeighbors',3,'Standardize',true);`
+- Decision tree: `t = templateTree('Surrogate','off');`
+- RBF-SVM: `t = templateSVM('Standardize',true,'KernelFunction','rbf','KernelScale','auto');`
 
 How do the inter-class boundaries look?
 Does the in-sample performance improve?
@@ -388,10 +402,12 @@ Does the in-sample performance improve?
 
 Now we can test our classifier on new stars!
 Two new time series are in the `toTest` directory:
+
 1. `9664607.txt`
 2. `10933414.txt`
 
 You can load them using:
+
 ```matlab
 X = LoadTestData();
 ```
@@ -413,6 +429,7 @@ What does your best model predict to be the identity of these two new stars?
 You may wish to look at the time series and Fourier power spectrum of each star to see if you agree with your model's assessment.
 
 ### :fire::fire::fire::fire::fire::fire: (Optional) A massive feature space
+
 Our results are pretty impressive from such a simple two-dimensional space of power spectral density-based features.
 We can improve our performance (and predictions) dramatically by adding better time-series features.
 We have already done the calculation for you (using [hctsa](https://github.com/benfulcher/hctsa) time-series feature extraction software).
