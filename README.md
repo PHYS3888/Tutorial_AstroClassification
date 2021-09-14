@@ -14,14 +14,20 @@ This repeated measurement of brightness over time is called a [_light curve_](ht
 
 The amazing _Kepler_ light curve time series that we will be analyzing today takes a brightness measurement every 29.45 minutes.
 
+Note that this tutorial is based on current research within the School of Physics on using statistical models to classify Kepler data :cool:
+
 ## Background
 
-Today we'll focus on the problem of predicting a star's identity from the properties of its light curve.
+Today we'll tackle the problem of predicting the type of star from the properties of its light curve.
 
-Is this problem a supervised or unsupervised problem?
-Is it a classification or regression problem?
+:question::question::question: __Q1:__
 
-As shown in the plot below, there are seven different classes of object that we're interested in detecting (labels of each star are given in parentheses):
+What type of problem is this:
+
+- Is it a supervised or unsupervised problem?
+- Is it a classification or regression problem?
+
+There are seven different classes of stars that we're interested in detecting (class labels are annotated in parentheses):
 
 1. Detached binary (`'detached'`)
 2. Contact binary (`'contact'`)
@@ -32,6 +38,7 @@ As shown in the plot below, there are seven different classes of object that we'
 7. Non-variable (`'nonvar'`)
 
 Take a moment to inspect a representative example of each class in the time-domain and frequency-domain plots shown below.
+How do periodic structures in the time domain manifest in the frequency domain?
 Just looking at the data, what types of properties do you think are going to be useful in distinguishing these seven types of stars?
 
 ![Time and frequency domain light curves](img/classTimeSeries.png)
@@ -50,7 +57,7 @@ TimeSeries(1:10,:)
 Each row of the `TimeSeries` table corresponds to a star observed by the Kepler telescope.
 Light-curve data is contained in the `Data` column, while the other columns give additional information about each star, including its identity (`Name`) and assigned class (`Keywords`).
 
-#### Table objects
+#### Working with tables
 
 Verify that there are 1341 time series in total using `height(TimeSeries)`.
 If you are not familiar with table objects in Matlab, note that you can pick out the time-series data for object `i` as `TimeSeries.Data{i}`, its ID as `TimeSeries.Name{i}`, and its class label as `TimeSeries.Keywords{i}`.
@@ -58,9 +65,9 @@ All metadata for object `i` is in the row `i`: `TimeSeries(i,:)`.
 
 Input some of these types of commands to verify that you understand how to work with Matlab tables.
 
-### Sampling frequency:
+### Sampling frequency
 
-:question::question::question: __Q1:__
+:question::question::question: __Q2:__
 What is the sampling rate, `fs` (Hz)?
 Give your answer in scientific notation to four significant figures.
 
@@ -95,12 +102,17 @@ In this tutorial we are going to represent time series by their different proper
 
 ### Two-Class Classification
 
-Seven classes is a bit daunting!
+Seven classes is a bit daunting! :sweat_smile:
 Let's first build some confidence by starting with a simpler two-class problem.
 
 #### Filtering to a subset
 
-Start by filtering down to just two classes: `contact` and `nonvar`.
+Start by filtering down to a just two classes:
+
+- Option 1: `contact` and `nonvar` (solutions work through this pair).
+- Option 2: pick any pair of your choice, e.g., `gDor` and `dSct` (:fire:).
+Note that the instructions below use `contact` and `nonvar`.
+If you pick option 2, you'll need to modify the below to match the two classes you've selected.
 
 You can achieve this by the following steps (fill in the blank `...`):
 
@@ -147,7 +159,7 @@ From the titles, verify that all of the plotted examples are of the right class 
 From inspecting just five examples of each type, do you think there are structures in the frequency domain that might distinguish these two classes of stars?
 What types of properties of the Fourier power spectrum do you think will help you classify these two types of stars?
 
-### Choose Your Own Features
+### Choose your own features :smile:
 
 So now we have now wet our toes, we can get to the meat of our task.
 
@@ -230,7 +242,7 @@ Are there any outliers?
 ### Training a classifier
 
 So now we want to learn a rule to separate these two classes.
-We're going to focus on a support vector machine (SVM) classifier, which can (crudely) be viewed as a souped-up variant of the single neuron classifier we studied earlier.
+We're going to focus on a support vector machine (SVM) classifier, which can in simple terms be thought of as a souped-up variant of the single-neuron classifier we studied earlier.
 
 Let's first __train SVM models__ to distinguish contact binaries from non-variable stars in our two-dimensional feature space.
 We will use the `trainModels` function which takes in our observations (`dataMatrixTwoClass`) and the labels we want to the model to predict (`classLabelsTwoClass`):
@@ -272,7 +284,7 @@ Try both:
 
 Does your model learn a sensible prediction profile to distinguish the two classes of stars?
 
-#### A Nonlinear Model
+#### A nonlinear model
 
 Linear not good enough for you?
 
@@ -282,9 +294,9 @@ Rather than assuming a linear boundary, this model uses a radial basis kernel fu
 Repeat the code above to evaluate this more complex model.
 Check what the predictions look like in the `gridPredictions` plot for this nonlinear model, `Mdl_SVMnonlinear`, and verify the nonlinear boundary.
 
-:question::question::question: __Q2:__
+:question::question::question: __Q3:__
 Upload a `gridPredictions` plot of the data and the predictions of one of your trained SVMs (`Mdl_SVMlinear` or `Mdl_SVMnonlinear`) in your two-dimensional feature space.
-Make sure the axes are labeled to clearly describe what your two features are computing.
+Make sure your axes are labeled in a way that clearly explains your two features (e.g., include the frequency range you selected for your band power feature).
 
 #### :fire::fire::fire: _(Optional)_ :fire::fire::fire: Adding noise
 
@@ -352,13 +364,13 @@ Are some classes being classified more accurately than others?
 Notice that correctly classified examples of each class appear along the diagonal of `confMat`.
 Use the `trace` function to count the total number of correctly classified stars, and divide it by the total number of stars to get the classification accuracy.
 
-:question::question::question: __Q3:__
-Upload the line(s) of code that, given a confusion matrix, `confMat`, computes the classification accuracy.
+:question::question::question: __Q4:__
+From the options provided, select the line of code that, given a confusion matrix, `confMat`, correctly computes the classification accuracy.
 
 Compute the classification accuracy for the linear and nonlinear kernels.
 Does the accuracy improve with the more complex, nonlinear kernel?
 
-:question::question::question: __Q4:__
+:question::question::question: __Q5:__
 Does a boost in in-sample accuracy from applying a more complex model always represent an improvement?
 Why or why not?
 
@@ -423,7 +435,7 @@ Now we can use the `predict` function to classify each of these stars based on t
 modelPredictions = predict(trainedModel,newStarFeatures);
 ```
 
-:question::question::question: __Q5:__
+:question::question::question: __Q6:__
 What does your best model predict to be the identity of these two new stars?
 
 You may wish to look at the time series and Fourier power spectrum of each star to see if you agree with your model's assessment.
@@ -432,7 +444,7 @@ You may wish to look at the time series and Fourier power spectrum of each star 
 
 Our results are pretty impressive from such a simple two-dimensional space of power spectral density-based features.
 We can improve our performance (and predictions) dramatically by adding better time-series features.
-We have already done the calculation for you (using [hctsa](https://github.com/benfulcher/hctsa) time-series feature extraction software).
+We have already done the calculation for you (using [_hctsa_](https://github.com/benfulcher/hctsa) time-series feature extraction software).
 The feature data is in `hctsa_datamatrix.csv` and information about the features is in `hctsa_features.csv`.
 Load in the data and retrain your model in this high-dimensional feature space.
 Do you get better performance?
