@@ -107,12 +107,10 @@ Let's first build some confidence by starting with a simpler two-class problem.
 
 #### Filtering to a subset
 
-Start by filtering down to a just two classes:
+Start by filtering down to a just two classes: `contact` and `nonvar`.
 
-- Option 1: `contact` and `nonvar` (solutions work through this pair).
-- Option 2: pick any pair of your choice, e.g., `gDor` and `dSct` (:fire:).
-Note that the instructions below use `contact` and `nonvar`.
-If you pick option 2, you'll need to modify the below to match the two classes you've selected.
+[:fire:___Optional___:fire:: If you are feeling adventurous, instead of `contact` and `nonvar`, you may select any pair of classes you're interested in, e.g., `gDor` and `dSct` (:fire:).
+But note that the instructions below (and the lab solutions) will work through the example of picking `contact` and `nonvar`, so you'll need to modify the below to match the two classes you've selected].
 
 You can achieve this by the following steps (fill in the blank `...`):
 
