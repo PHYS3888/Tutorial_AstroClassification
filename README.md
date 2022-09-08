@@ -16,8 +16,6 @@ This repeated measurement of brightness over time is called a [_light curve_](ht
 
 The amazing _Kepler_ light curve time series that we will be analyzing today __takes a brightness measurement every 29.45 minutes__.
 
-Note that this tutorial is based on current research within the School of Physics on using statistical models to classify Kepler data :cool:
-
 ## Background
 
 Today we'll tackle the problem of predicting the type of star from the properties of its light curve.
