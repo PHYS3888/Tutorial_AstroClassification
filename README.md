@@ -11,10 +11,10 @@ Gone are the days of manually observing and storing a handful of stars; modern a
 Because it is unfeasible for human researchers to manually sift through datasets of this magnitude, research methods have adapted: modern astronomers use statistical learning methods to find and quantify patterns in big astrophysical datasets.
 
 In this tutorial, you will work through the techniques and concepts introduced in the lecture to analyze data from the _Kepler_ mission.
-By the end of the tutorial, you will have developed a simple algorithm to  automatically distinguish different types of stars from patterns in how their brightness varies over time.
+By the end of the tutorial, you will have developed a simple algorithm to automatically distinguish different types of stars from patterns in how their brightness varies over time.
 This repeated measurement of brightness over time is called a [_light curve_](https://imagine.gsfc.nasa.gov/science/toolbox/timing1.html).
 
-The amazing _Kepler_ light curve time series that we will be analyzing today takes a brightness measurement every 29.45 minutes.
+The amazing _Kepler_ light curve time series that we will be analyzing today __takes a brightness measurement every 29.45 minutes__.
 
 Note that this tutorial is based on current research within the School of Physics on using statistical models to classify Kepler data :cool:
 
