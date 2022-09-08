@@ -34,8 +34,9 @@ myFeatures(1) = ...;
 %-------------------------------------------------------------------------------
 % Feature 2
 % (e.g., use bandpower on the power spectrum of y):
-% You can check the syntax by running 'doc bandpower'
+% You need to fill in a minimum and maximum frequency for your band!
+% (You can check the syntax by running 'doc bandpower')
 
-myFeatures(2) = bandpower(pxx,f,[...,...]);
+myFeatures(2) = bandpower(pxx,f,[...,...],'psd');
 
 end
