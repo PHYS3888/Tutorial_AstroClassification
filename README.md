@@ -1,6 +1,6 @@
 # PHYS3888 Computer Lab: Classifying Kepler Light Curves
 
-_Acknowledgement_: This tutorial is based on research done in the School of Physics by Nic Barbara with Tim Bedding and Simon Murphy in the [Asteroseismology group](https://sifa.sydney.edu.au/asteroseismology/) in collaboration with Ben Fulcher.
+_Acknowledgement_: This tutorial is based on a [recent research paper](https://doi.org/10.1093/mnras/stac1515) from researcher's in the School of Physics (including our [Asteroseismology group](https://sifa.sydney.edu.au/asteroseismology/)).
 
 In this tutorial, we will learn how to analyze a dataset of light curves measured from [NASA's _Kepler_ mission](https://www.nasa.gov/mission_pages/kepler/overview/index.html).
 You can learn more about the _Kepler_ mission in [this YouTube video](https://www.youtube.com/watch?v=3yij1rJOefM).
