@@ -204,7 +204,7 @@ end
 :milky_way::stars::satisfied::star2::bowtie::star2::smile::star2::laughing::stars::milky_way:
 
 Have a brief celebration!
-You have just generated the main programmatic machinery to convert light curves into an interpretable two-dimensional feature space that will enable the automatic classification of Kepler stars!
+You have just develeoped the main algorithmic machinery to convert light curves into an interpretable two-dimensional feature space that will enable the automatic classification of Kepler stars!
 
 #### Plotting
 
